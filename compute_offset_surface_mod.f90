@@ -49,7 +49,7 @@ contains
     
     call expand_plasma_surface(theta_rootSolve, zeta_plasma_rootSolveSolution, separation, x_offsetSurface, y_offsetSurface, z_offsetSurface)
   
-  contains  
+  end subroutine compute_offset_surface_xyz_of_thetazeta
     !------------------------------------------------------------------------------------
   
     function fzero_residual(zeta_plasma_test)
@@ -75,6 +75,4 @@ contains
       
     end function fzero_residual
     
-  end subroutine compute_offset_surface_xyz_of_thetazeta
-  
 end module compute_offset_surface_mod
