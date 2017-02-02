@@ -48,8 +48,8 @@ module global_variables
 
   real(dp) :: dtheta_plasma, dzeta_plasma, dtheta_coil, dzeta_coil
 
-  integer :: mpol_coil=8
-  integer :: ntor_coil=8
+  integer :: mpol_coil=12
+  integer :: ntor_coil=12
   integer :: mnmax_coil
   integer :: num_basis_functions
   integer, dimension(:), allocatable :: xm_coil, xn_coil
@@ -80,6 +80,12 @@ module global_variables
   integer :: nlambda = 4
   real(dp) :: lambda_min = 1.0d-19, lambda_max = 1.0d-13
   real(dp), dimension(:), allocatable :: lambda
+
+  integer :: target_option = 1
+  real(dp) :: current_density_target = 8.0d+6
+  real(dp) :: lambda_search_tolerance = 1.0d-5
+  integer :: exit_code = 0
+  real(dp) :: chi2_B_target = 0
 
 end module global_variables
 

@@ -10,7 +10,7 @@ program regcoil
   integer :: tic, toc, countrate
 
   print *,"This is REGCOIL,"
-  print *,"a regularized least-squares method for computing stellarator coils."
+  print *,"a regularized least-squares method for computing stellarator coil shapes."
   call system_clock(tic,countrate)
 
   call read_input()
@@ -32,6 +32,8 @@ program regcoil
      call compute_diagnostics_for_nescout_potential()
   case (3)
      call svd_scan()
+  case (4,5)
+     call auto_regularization_solve()
   case default
      print *,"Invalid general_option:",general_option
      stop

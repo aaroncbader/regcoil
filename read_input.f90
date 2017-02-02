@@ -19,7 +19,8 @@ subroutine read_input
        mpol_transform_refinement, ntor_transform_refinement, &
        net_poloidal_current_Amperes, net_toroidal_current_Amperes, &
        load_bnorm, bnorm_filename, &
-       shape_filename_plasma, nlambda, lambda_min, lambda_max, general_option, nescout_filename
+       shape_filename_plasma, nlambda, lambda_min, lambda_max, general_option, nescout_filename, &
+       target_option, current_density_target, lambda_search_tolerance
 
   ! getcarg is in LIBSTELL
   call getcarg(1, inputFilename, numargs)
@@ -57,12 +58,12 @@ subroutine read_input
 
 
   print *,"Resolution parameters:"
-  print *,"  ntheta_plasma =",ntheta_plasma
-  print *,"  ntheta_coil   =",ntheta_coil
-  print *,"  nzeta_plasma =",nzeta_plasma
-  print *,"  nzeta_coil   =",nzeta_coil
-  print *,"  mpol_coil =",mpol_coil
-  print *,"  ntor_coil =",ntor_coil
+  print "(a,i4)","   ntheta_plasma =",ntheta_plasma
+  print "(a,i4)","   ntheta_coil   =",ntheta_coil
+  print "(a,i4)","   nzeta_plasma  =",nzeta_plasma
+  print "(a,i4)","   nzeta_coil    =",nzeta_coil
+  print "(a,i4)","   mpol_coil     =",mpol_coil
+  print "(a,i4)","   ntor_coil     =",ntor_coil
 
   select case (symmetry_option)
   case (1)
