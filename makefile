@@ -34,8 +34,8 @@ else ifeq ($(HOSTNAME),cori)
 else
 	FC = mpif90
 	#EXTRA_COMPILE_FLAGS = -fopenmp -I/opt/local/include -ffree-line-length-none -cpp
-	EXTRA_COMPILE_FLAGS = -fopenmp -I/opt/local/include -ffree-line-length-none
-	EXTRA_LINK_FLAGS =  -fopenmp -L/opt/local/lib -lnetcdff  -lnetcdf -framework Accelerate
+	EXTRA_COMPILE_FLAGS = -fopenmp -I/usr/lib64 -ffree-line-length-none
+	EXTRA_LINK_FLAGS =  -fopenmp -L/usr/lib64 -lnetcdff  -lnetcdf -framework Accelerate
 
 	# For batch systems, set the following variable to the command used to run jobs. This variable is used by 'make test'.
 	REGCOIL_COMMAND_TO_SUBMIT_JOB =
