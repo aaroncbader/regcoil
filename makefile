@@ -34,8 +34,13 @@ else ifeq ($(HOSTNAME),cori)
 else
 	FC = mpif90
 	#EXTRA_COMPILE_FLAGS = -fopenmp -I/opt/local/include -ffree-line-length-none -cpp
-	EXTRA_COMPILE_FLAGS = -fopenmp -I/opt/local/include -ffree-line-length-none
-	EXTRA_LINK_FLAGS =  -fopenmp -L/opt/local/lib -lnetcdff  -lnetcdf -framework Accelerate
+	NETCDF_DIR = /userspace/s/schmittj/src/netcdf-fortran/netcdf-fortran-4.4.4/fortran/
+	LAPACK_DIR = /userspace/s/schmittj/src/lapack/lapack-3.7.0/
+	BLAS_DIR = /userspace/s/schmittj/src/blas/BLAS-3.7.0/
+	INCDIRS = -I $(NETCDF_DIR) -I $(LAPACK_DIR) -I $(BLAS_DIR)
+	LINKDIRS = -L $(NETCDF_DIR) -L $(LAPACK_DIR) -L $(BLAS_DIR)
+	EXTRA_COMPILE_FLAGS = -fopenmp $(INCDIRS) -ffree-line-length-none
+	EXTRA_LINK_FLAGS =  -fopenmp $(LINKDIRS) -lnetcdff  -lnetcdf -lblas -llapack
 
 	# For batch systems, set the following variable to the command used to run jobs. This variable is used by 'make test'.
 	REGCOIL_COMMAND_TO_SUBMIT_JOB =
