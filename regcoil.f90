@@ -32,8 +32,10 @@ program regcoil
      call compute_diagnostics_for_nescout_potential()
   case (3)
      call svd_scan()
-  case (4,5)
+  case (4)
      call auto_regularization_solve()
+  case (5)
+     call optimize() 
   case default
      print *,"Invalid general_option:",general_option
      stop
