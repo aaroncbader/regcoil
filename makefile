@@ -8,9 +8,12 @@
 
 ifdef NERSC_HOST
         HOSTNAME = $(NERSC_HOST)
+else ifeq ($(HOST),abader.cptc.wisc.edu)
+  HOSTNAME="abader"
 else
-        HOSTNAME="laptop"
+  HOSTNAME="laptop"
 endif
+
 
 ifeq ($(HOSTNAME),edison)
 	FC = ftn
@@ -31,14 +34,20 @@ else ifeq ($(HOSTNAME),cori)
 	# Above, the link flag "-Wl,-ydgemm_" causes the linker to report which version of DGEMM (the BLAS3 matrix-matrix-multiplication subroutine) is used.
 	# For batch systems, set the following variable to the command used to run jobs. This variable is used by 'make test'.
 	REGCOIL_COMMAND_TO_SUBMIT_JOB = srun -n 1 -c 32
-else
-	FC = mpif90
-	#EXTRA_COMPILE_FLAGS = -fopenmp -I/opt/local/include -ffree-line-length-none -cpp
-	EXTRA_COMPILE_FLAGS = -fopenmp -I/usr/lib64 -ffree-line-length-none
-	EXTRA_LINK_FLAGS =  -fopenmp -L/usr/lib64 -lnetcdff  -lnetcdf -framework Accelerate
+else ifeq ($(HOSTNAME),"abader") 
+  FC = gfortran
+  EXTRA_COMPILE_FLAGS = -fopenmp -I/usr/lib64 -I/usr/include -ffree-line-length-none
+  EXTRA_LINK_FLAGS =  -fopenmp -L/usr/lib64 -lnetcdff  -lnetcdf -lblas -llapack
 
-	# For batch systems, set the following variable to the command used to run jobs. This variable is used by 'make test'.
+else
+  FC = mpif90
+  #EXTRA_COMPILE_FLAGS = -fopenmp -I/opt/local/include -ffree-line-length-none -cpp
+  EXTRA_COMPILE_FLAGS = -fopenmp -I/opt/local/include -ffree-line-length-none
+  EXTRA_LINK_FLAGS =  -fopenmp -L/opt/local/lib -lnetcdff  -lnetcdf -framework Accelerate
+
+  # For batch systems, set the following variable to the command used to run jobs. This variable is used by 'make test'.
 	REGCOIL_COMMAND_TO_SUBMIT_JOB =
+  
 endif
 
 
