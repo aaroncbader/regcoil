@@ -8,21 +8,17 @@ subroutine read_nescin(nescin_filename, r, drdtheta, drdzeta, d2rdtheta2, d2rdth
   implicit none
   
   character(*) :: nescin_filename
-  integer, intent(in) :: ntheta, nzetal
+  integer :: ntheta, nzetal
   real(dp), dimension(3,ntheta,nzetal) :: r, drdtheta, drdzeta
   real(dp), dimension(3,ntheta,nzetal) :: d2rdtheta2, d2rdthetadzeta, d2rdzeta2
   real(dp), dimension(ntheta)  :: theta
   real(dp), dimension(nzetal) :: zetal
   logical :: compute_2nd_derivs
   
-  integer :: iunit = 7, itheta, izeta, iflag
+  integer :: iunit = 7, iflag
   integer :: m, n, ntotal, k, mr, nr, istat
   real(dp) :: rmnc, zmns, rmns, zmnc
-  real(dp) :: angle, sinangle, cosangle, dsinangledtheta, dsinangledzeta, dcosangledtheta, dcosangledzeta
-  real(dp) :: angle2, sinangle2, cosangle2, dsinangle2dzeta, dcosangle2dzeta
-  real(dp) :: d2sinangle2dzeta2, d2cosangle2dzeta2
-  real(dp) :: d2sinangledtheta2, d2sinangledthetadzeta, d2sinangledzeta2
-  real(dp) :: d2cosangledtheta2, d2cosangledthetadzeta, d2cosangledzeta2
+  
 
   character(300) :: myline
   character(*), parameter :: matchString = "------ Current Surface"
@@ -85,14 +81,53 @@ subroutine read_nescin(nescin_filename, r, drdtheta, drdzeta, d2rdtheta2, d2rdth
 
   read (iunit, *)
   read (iunit, *)
+
   do k = 1, ntotal
      read (iunit, *) m, n, rmnc, zmns, rmns, zmnc
+
      xm_ws(k) = m
      xn_ws(k) = n
      rmnc_ws(k) = rmnc
      zmns_ws(k) = zmns
      rmns_ws(k) = rmns
      zmnc_ws(k) = zmnc
+  end do
+  
+  close(iunit)
+  call calc_nescin_vars(r, ntotal, xm_ws, xn_ws, rmnc_ws, zmns_ws, rmns_ws, zmnc_ws, drdtheta, drdzeta, d2rdtheta2, d2rdthetadzeta, d2rdzeta2, ntheta, nzetal, theta, zetal, compute_2nd_derivs)
+
+end subroutine  read_nescin
+
+! A subroutine that takes in the surfaces and calculates the derivatives
+subroutine calc_nescin_vars(r, ntotal, xm_ws, xn_ws, rmnc_ws, zmns_ws, rmns_ws, zmnc_ws, drdtheta, drdzeta, d2rdtheta2, d2rdthetadzeta, d2rdzeta2, ntheta, nzetal, theta, zetal, compute_2nd_derivs)
+
+  use stel_kinds
+  use global_variables, only: nfp, mnmax
+  implicit none
+  integer, intent(in) :: ntheta, nzetal, ntotal
+  real(dp), dimension(3,ntheta,nzetal) :: r, drdtheta, drdzeta
+  real(dp), dimension(3,ntheta,nzetal) :: d2rdtheta2, d2rdthetadzeta, d2rdzeta2
+  real(dp), dimension(ntheta)  :: theta
+  real(dp), dimension(nzetal) :: zetal
+  real(dp) :: rmnc, zmns, rmns, zmnc
+  real(dp), dimension(ntotal) :: xm_ws, xn_ws, rmnc_ws, zmns_ws, rmns_ws, zmnc_ws
+  logical :: compute_2nd_derivs
+  integer :: itheta, izeta, k, m, n
+
+  real(dp) :: angle, sinangle, cosangle, dsinangledtheta, dsinangledzeta, dcosangledtheta, dcosangledzeta
+  real(dp) :: angle2, sinangle2, cosangle2, dsinangle2dzeta, dcosangle2dzeta
+  real(dp) :: d2sinangle2dzeta2, d2cosangle2dzeta2
+  real(dp) :: d2sinangledtheta2, d2sinangledthetadzeta, d2sinangledzeta2
+  real(dp) :: d2cosangledtheta2, d2cosangledthetadzeta, d2cosangledzeta2
+
+  do k = 1, ntotal
+     m = xm_ws(k)
+     n = xn_ws(k)
+     rmnc = rmnc_ws(k)
+     zmns = zmns_ws(k)
+     rmns = rmns_ws(k)
+     zmnc = zmnc_ws(k)
+     
 
      do izeta = 1,nzetal
         angle2 = zetal(izeta)
@@ -155,11 +190,8 @@ subroutine read_nescin(nescin_filename, r, drdtheta, drdzeta, d2rdtheta2, d2rdth
         end do
      end do
   end do
+
+end subroutine calc_nescin_vars
  
+
   
-  close(iunit)
-
-end subroutine  read_nescin
-
-!subroutine calc_nescin_vars(r, drdtheta, drdzeta, d2rdtheta2, d2rdthetadzeta, d!#2rdzeta2, ntheta, nzetal, theta, zetal, compute_2nd_derivs)
-
