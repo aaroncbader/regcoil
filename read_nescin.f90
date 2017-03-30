@@ -1,6 +1,6 @@
 subroutine read_nescin(nescin_filename, r, drdtheta, drdzeta, d2rdtheta2, d2rdthetadzeta, d2rdzeta2, ntheta, nzetal, theta, zetal, compute_2nd_derivs)
 
-  use global_variables, only: nfp, mnmax, rmnc_ws, zmns_ws, rmns_ws, zmnc_ws, xm_ws, xn_ws
+  use global_variables, only: nfp, mnmax, rmnc_ws, zmns_ws, rmns_ws, zmnc_ws, xm_ws, xn_ws, ntotal_ws
   use safe_open_mod
   use stel_constants
   use stel_kinds
@@ -48,8 +48,8 @@ subroutine read_nescin(nescin_filename, r, drdtheta, drdzeta, d2rdtheta2, d2rdth
   end do
   read (iunit, *)
 
-  read (iunit, *) ntotal
-  print *,"  Reading",ntotal,"Fourier modes from nescin"
+  read (iunit, *) ntotal_ws
+  print *,"  Reading",ntotal_ws,"Fourier modes from nescin"
 
 
 !!$  if (geometry_option_outer==4) then
@@ -66,25 +66,24 @@ subroutine read_nescin(nescin_filename, r, drdtheta, drdzeta, d2rdtheta2, d2rdth
 
 !!$  end if
 
-  allocate(xm_ws(ntotal),stat=iflag)
+  allocate(xm_ws(ntotal_ws),stat=iflag)
   if (iflag .ne. 0) stop "Allocation error! read_nescin 1"
-  allocate(xn_ws(ntotal),stat=iflag)
+  allocate(xn_ws(ntotal_ws),stat=iflag)
   if (iflag .ne. 0) stop "Allocation error! read_nescin 2"
-  allocate(rmnc_ws(ntotal),stat=iflag)
+  allocate(rmnc_ws(ntotal_ws),stat=iflag)
   if (iflag .ne. 0) stop "Allocation error! read_nescin 3"
-  allocate(zmns_ws(ntotal),stat=iflag)
+  allocate(zmns_ws(ntotal_ws),stat=iflag)
   if (iflag .ne. 0) stop "Allocation error! read_nescin 4"
-  allocate(rmns_ws(ntotal),stat=iflag)
+  allocate(rmns_ws(ntotal_ws),stat=iflag)
   if (iflag .ne. 0) stop "Allocation error! read_nescin 5"
-  allocate(zmnc_ws(ntotal),stat=iflag)
+  allocate(zmnc_ws(ntotal_ws),stat=iflag)
   if (iflag .ne. 0) stop "Allocation error! read_nescin 6"
 
   read (iunit, *)
   read (iunit, *)
 
-  do k = 1, ntotal
+  do k = 1, ntotal_ws
      read (iunit, *) m, n, rmnc, zmns, rmns, zmnc
-
      xm_ws(k) = m
      xn_ws(k) = n
      rmnc_ws(k) = rmnc
@@ -94,25 +93,26 @@ subroutine read_nescin(nescin_filename, r, drdtheta, drdzeta, d2rdtheta2, d2rdth
   end do
   
   close(iunit)
-  call calc_nescin_vars(r, ntotal, xm_ws, xn_ws, rmnc_ws, zmns_ws, rmns_ws, zmnc_ws, drdtheta, drdzeta, d2rdtheta2, d2rdthetadzeta, d2rdzeta2, ntheta, nzetal, theta, zetal, compute_2nd_derivs)
-
+  call calc_nescin_vars(r, ntotal_ws, xm_ws, xn_ws, rmnc_ws, zmns_ws, rmns_ws, zmnc_ws, drdtheta, drdzeta, d2rdtheta2, d2rdthetadzeta, d2rdzeta2, ntheta, nzetal, theta, zetal, compute_2nd_derivs)
+ 
 end subroutine  read_nescin
 
 ! A subroutine that takes in the surfaces and calculates the derivatives
 subroutine calc_nescin_vars(r, ntotal, xm_ws, xn_ws, rmnc_ws, zmns_ws, rmns_ws, zmnc_ws, drdtheta, drdzeta, d2rdtheta2, d2rdthetadzeta, d2rdzeta2, ntheta, nzetal, theta, zetal, compute_2nd_derivs)
 
   use stel_kinds
-  use global_variables, only: nfp, mnmax
+  use global_variables, only: nfp, ntotal_ws
   implicit none
-  integer, intent(in) :: ntheta, nzetal, ntotal
+  integer, intent(in) :: ntheta, nzetal
   real(dp), dimension(3,ntheta,nzetal) :: r, drdtheta, drdzeta
   real(dp), dimension(3,ntheta,nzetal) :: d2rdtheta2, d2rdthetadzeta, d2rdzeta2
   real(dp), dimension(ntheta)  :: theta
   real(dp), dimension(nzetal) :: zetal
   real(dp) :: rmnc, zmns, rmns, zmnc
-  real(dp), dimension(ntotal) :: xm_ws, xn_ws, rmnc_ws, zmns_ws, rmns_ws, zmnc_ws
+  integer, dimension(ntotal) :: xm_ws, xn_ws
+  real(dp), dimension(ntotal) :: rmnc_ws, zmns_ws, rmns_ws, zmnc_ws
   logical :: compute_2nd_derivs
-  integer :: itheta, izeta, k, m, n
+  integer :: itheta, izeta, k, m, n, ntotal
 
   real(dp) :: angle, sinangle, cosangle, dsinangledtheta, dsinangledzeta, dcosangledtheta, dcosangledzeta
   real(dp) :: angle2, sinangle2, cosangle2, dsinangle2dzeta, dcosangle2dzeta
@@ -120,7 +120,7 @@ subroutine calc_nescin_vars(r, ntotal, xm_ws, xn_ws, rmnc_ws, zmns_ws, rmns_ws, 
   real(dp) :: d2sinangledtheta2, d2sinangledthetadzeta, d2sinangledzeta2
   real(dp) :: d2cosangledtheta2, d2cosangledthetadzeta, d2cosangledzeta2
 
-  do k = 1, ntotal
+  do k = 1, ntotal_ws
      m = xm_ws(k)
      n = xn_ws(k)
      rmnc = rmnc_ws(k)

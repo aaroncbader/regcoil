@@ -13,7 +13,7 @@ module init_surface_mod
          geometry_option, R_specified, a, separation, dtheta, dzeta, nescin_filename, which_surface)
 
       use compute_offset_surface_mod
-      use global_variables, only: R0_plasma, nfp, volume_coil
+      use global_variables, only: R0_plasma, nfp
       use stel_kinds
       use stel_constants
       use omp_lib
@@ -27,7 +27,7 @@ module init_surface_mod
       real(dp), dimension(:,:,:), allocatable :: r, drdtheta, drdzeta, normal
       ! These next 2 arrays are not used now, but may be needed in the future for Merkel's regularization
       real(dp), dimension(:,:,:), allocatable :: d2rdtheta2, d2rdthetadzeta, d2rdzeta2
-      real(dp), dimension(:,:), allocatable :: norm_normal, major_R_squared
+      real(dp), dimension(:,:), allocatable :: norm_normal
       real(dp) :: R0_to_use
       real(dp) :: angle, sinangle, cosangle, dsinangledtheta, dcosangledtheta
       real(dp) :: angle2, sinangle2, cosangle2, dsinangle2dzeta, dcosangle2dzeta
@@ -67,6 +67,8 @@ module init_surface_mod
       if (iflag .ne. 0) stop 'Allocation error! init_surface_mod 6'
       allocate(normal(3,ntheta,nzetal),stat=iflag)
       if (iflag .ne. 0) stop 'Allocation error! init_surface_mod 7'
+      allocate(norm_normal(ntheta, nzeta),stat=iflag)
+      if (iflag .ne. 0) stop 'Allocation error! init_surface_mod 11'
 
       r = 0
       drdtheta = 0
@@ -217,16 +219,44 @@ module init_surface_mod
          stop
       end select
 
+      call calc_normals(ntheta, nzeta, nzetal, normal, norm_normal, drdtheta, drdzeta)
+      call calc_volume(ntheta, nzetal, r, dtheta, dzeta, sum(norm_normal), area)
+
+    end subroutine init_surface
+
+    subroutine calc_normals(ntheta, nzeta, nzetal, normal, norm_normal, drdtheta, drdzeta)
+    
+      use stel_kinds
+
+      implicit none
+      
+      integer, intent(in) :: ntheta, nzeta, nzetal
+      
+      real(dp), dimension(3,ntheta,nzetal), intent(in) :: drdtheta, drdzeta
+      real(dp), dimension(3,ntheta,nzetal) :: normal
+      real(dp), dimension(ntheta,nzeta) :: norm_normal
+     
+
       ! Evaluate cross product:
       normal(1,:,:) = drdzeta(2,:,:) * drdtheta(3,:,:) - drdtheta(2,:,:) * drdzeta(3,:,:)
       normal(2,:,:) = drdzeta(3,:,:) * drdtheta(1,:,:) - drdtheta(3,:,:) * drdzeta(1,:,:)
       normal(3,:,:) = drdzeta(1,:,:) * drdtheta(2,:,:) - drdtheta(1,:,:) * drdzeta(2,:,:)
 
-      allocate(norm_normal(ntheta, nzeta),stat=iflag)
-      if (iflag .ne. 0) stop 'Allocation error! init_surface_mod 11'
+      
       norm_normal = sqrt(normal(1,:,1:nzeta)**2 + normal(2,:,1:nzeta)**2 + normal(3,:,1:nzeta)**2)
+    end subroutine calc_normals
+    
+    subroutine calc_volume(ntheta, nzetal, r, dtheta, dzeta, sum_norm_normal, area)
+      use global_variables, only: nfp, volume_coil
+      use stel_kinds
 
-      area = nfp * dtheta * dzeta * sum(norm_normal)
+      integer, intent(in) :: ntheta, nzetal
+      real(dp), dimension(:,:), allocatable :: major_R_squared
+      real(dp) :: area, sum_norm_normal
+      real(dp), dimension(3,ntheta,nzetal), intent(in) :: r
+      real(dp) :: dtheta, dzeta
+
+      area = nfp * dtheta * dzeta * sum_norm_normal
 
       ! Compute coil surface volume using \int (1/2) R^2 dZ dzeta.
       ! These quantities will be evaluated on the half theta grid, which is the natural grid for dZ,
@@ -242,8 +272,7 @@ module init_surface_mod
       volume_coil = abs(volume_coil * dzeta / 2) ! r includes all nfp periods already, so no factor of nfp needed.
       deallocate(major_R_squared)
       print "(a,es10.3,a,es10.3,a)"," Coil surface area:",area," m^2. Volume:",volume_coil," m^3."
-
-    end subroutine init_surface
+    end subroutine calc_volume
 
   end module init_surface_mod
   

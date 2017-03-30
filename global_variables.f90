@@ -57,8 +57,8 @@ module global_variables
   real(dp), dimension(:), allocatable :: rmns, zmnc, rmnc, zmns
   !fourier components for winding surface
   real(dp), dimension(:), allocatable :: rmns_ws, zmnc_ws, rmnc_ws, zmns_ws
-  real(dp), dimension(:), allocatable :: xm_ws, xn_ws
-  integer :: mnmax, nfp
+  integer, dimension(:), allocatable :: xm_ws, xn_ws
+  integer :: mnmax, nfp, ntotal_ws
   integer, dimension(:), allocatable :: xm, xn
   logical :: lasym
 
