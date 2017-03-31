@@ -9,12 +9,14 @@ subroutine optimize
   integer :: i
   real(dp) :: r0, dtheta, dzeta
   real(dp) :: d2rdtheta2, d2rdthetadzeta, d2rdzeta2 !dummy variables
-  print *,'mnmax_coil',mnmax_coil
+
+
   !The sixth value is the major radius. We'll vary this a little to play with it
-  
   r0 = rmnc_ws(6)
-  do i = 0,1
+  print *,'original r0',r0
+  do i = 0,10
      rmnc_ws(6) = r0 + i/10.
+     print *,'calculation for new r0',rmnc_ws(6)
      print *,'calculating nescin vars'
      call calc_nescin_vars(r_coil, ntotal_ws, xm_ws, xn_ws, rmnc_ws, zmns_ws, rmns_ws, zmnc_ws, drdtheta_coil, drdzeta_coil, d2rdtheta2, d2rdthetadzeta, d2rdzeta2, ntheta_coil, nzetal_coil, theta_coil, zetal_coil, .False.)
      print *,'calculating normals'
