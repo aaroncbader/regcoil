@@ -4,12 +4,13 @@ module init_Fourier_modes_mod
 
 contains
 
-  subroutine init_Fourier_modes(mpol, ntor, mnmax, xm, xn)
+  subroutine init_Fourier_modes(mpol, ntor, mnmax, xm, xn, first_call)
 
     implicit none
 
     integer :: mpol, ntor, mnmax
     integer, dimension(:), allocatable :: xm, xn
+    logical :: first_call
     
     integer :: jn, jm, index, iflag
     integer, dimension(:), allocatable :: xm_temp, xn_temp
@@ -19,10 +20,12 @@ contains
     ! When xm is 0, xn must be positive.
     mnmax = mpol*(ntor*2+1) + ntor
     
-    allocate(xm(mnmax),stat=iflag)
-    if (iflag .ne. 0) stop 'Allocation error!'
-    allocate(xn(mnmax),stat=iflag)
-    if (iflag .ne. 0) stop 'Allocation error!'
+    if (first_call) then
+       allocate(xm(mnmax),stat=iflag)
+       if (iflag .ne. 0) stop 'Allocation error!'
+       allocate(xn(mnmax),stat=iflag)
+       if (iflag .ne. 0) stop 'Allocation error!'
+    end if
 
     ! Handle the xm=0 modes:
     xm=0

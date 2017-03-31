@@ -24,45 +24,46 @@ subroutine auto_regularization_solve
   integer, dimension(:), allocatable :: IPIV
 
   allocate(matrix(num_basis_functions, num_basis_functions), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
+  if (iflag .ne. 0) stop 'Allocation error! matrix'
   allocate(RHS(num_basis_functions), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
+  if (iflag .ne. 0) stop 'Allocation error! RHS'
   allocate(solution(num_basis_functions), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
+  if (iflag .ne. 0) stop 'Allocation error! solution'
   allocate(WORK(1), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
+  if (iflag .ne. 0) stop 'Allocation error! WORK'
   allocate(IPIV(num_basis_functions), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-
-  allocate(chi2_B(nlambda), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(chi2_K(nlambda), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(max_Bnormal(nlambda), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(max_K(nlambda), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(current_potential(ntheta_coil,nzeta_coil,nlambda), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(single_valued_current_potential_thetazeta(ntheta_coil,nzeta_coil,nlambda), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(this_current_potential(ntheta_coil,nzeta_coil), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(single_valued_current_potential_mn(num_basis_functions,nlambda), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(Bnormal_total(ntheta_plasma,nzeta_plasma,nlambda), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(K2(ntheta_coil,nzeta_coil,nlambda), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
+  if (iflag .ne. 0) stop 'Allocation error! IPIV'
   allocate(KDifference_x(ntheta_coil*nzeta_coil), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
+  if (iflag .ne. 0) stop 'Allocation error! KDifference_x'
   allocate(KDifference_y(ntheta_coil*nzeta_coil), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
+  if (iflag .ne. 0) stop 'Allocation error! KDifference_y'
   allocate(KDifference_z(ntheta_coil*nzeta_coil), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
+  if (iflag .ne. 0) stop 'Allocation error! KDifference_z'
   allocate(this_K2_times_N(ntheta_coil,nzeta_coil), stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
+  if (iflag .ne. 0) stop 'Allocation error! this_K2_times_N'
+  allocate(this_current_potential(ntheta_coil,nzeta_coil), stat=iflag)
+  if (iflag .ne. 0) stop 'Allocation error! this_current_potential'
 
+  if (.not. allocated(chi2_B)) then
+     allocate(chi2_B(nlambda), stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error! chi2_B'
+     allocate(chi2_K(nlambda), stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error! chi2_K'
+     allocate(max_Bnormal(nlambda), stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error! max_Bnormal'
+     allocate(max_K(nlambda), stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error! max_K'
+     allocate(current_potential(ntheta_coil,nzeta_coil,nlambda), stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error! current_potential'
+     allocate(single_valued_current_potential_thetazeta(ntheta_coil,nzeta_coil,nlambda), stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error! svcptz'  
+     allocate(single_valued_current_potential_mn(num_basis_functions,nlambda), stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error! svcpmn'
+     allocate(Bnormal_total(ntheta_plasma,nzeta_plasma,nlambda), stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error! Bnormal_total'
+     allocate(K2(ntheta_coil,nzeta_coil,nlambda), stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error! K2'
+  end if
 
   ! Call LAPACK's DSYSV in query mode to determine the optimal size of the work array
   call DSYSV('U',num_basis_functions, 1, matrix, num_basis_functions, IPIV, RHS, num_basis_functions, WORK, -1, INFO)

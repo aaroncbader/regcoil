@@ -23,7 +23,7 @@ program regcoil
 
   ! Initialize some of the vectors and matrices needed:
   call read_bnorm()
-  call build_matrices()
+  call build_matrices(.True.)
 
   select case (general_option)
   case (1)

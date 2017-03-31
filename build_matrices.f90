@@ -1,4 +1,4 @@
-subroutine build_matrices()
+subroutine build_matrices(first_call)
 
   use global_variables
   use stel_constants
@@ -8,6 +8,7 @@ subroutine build_matrices()
   
   implicit none
 
+  logical :: first_call !skip allocation if false
   integer :: l_coil, itheta_plasma, izeta_plasma, itheta_coil, izeta_coil, izetal_coil
   real(dp) :: x, y, z, dx, dy, dz, dr2inv, dr32inv
   integer :: index_plasma, index_coil, j, imn
@@ -23,7 +24,7 @@ subroutine build_matrices()
   integer :: M, N, K, LDA, LDB, LDC
   real(dp) :: BLAS_ALPHA=1, BLAS_BETA=0
   real(dp), dimension(:,:), allocatable :: tempMatrix
-
+  
 
 
 
@@ -31,7 +32,7 @@ subroutine build_matrices()
   print *,"Initializing basis functions and f"
   
   ! Initialize Fourier arrays
-  call init_Fourier_modes(mpol_coil, ntor_coil, mnmax_coil, xm_coil, xn_coil)
+  call init_Fourier_modes(mpol_coil, ntor_coil, mnmax_coil, xm_coil, xn_coil, first_call)
   xn_coil = xn_coil * nfp
   
   select case (symmetry_option)
@@ -43,22 +44,24 @@ subroutine build_matrices()
      print *,"Error! Invalid setting for symmetry_option:",symmetry_option
      stop
   end select
-  
-  allocate(basis_functions(ntheta_coil*nzeta_coil, num_basis_functions),stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(f_x(ntheta_coil*nzeta_coil, num_basis_functions),stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(f_y(ntheta_coil*nzeta_coil, num_basis_functions),stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(f_z(ntheta_coil*nzeta_coil, num_basis_functions),stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(d_x(ntheta_coil*nzeta_coil),stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(d_y(ntheta_coil*nzeta_coil),stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(d_z(ntheta_coil*nzeta_coil),stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
 
+  if (first_call) then 
+     allocate(basis_functions(ntheta_coil*nzeta_coil, num_basis_functions),stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error!'
+     allocate(f_x(ntheta_coil*nzeta_coil, num_basis_functions),stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error!'
+     allocate(f_y(ntheta_coil*nzeta_coil, num_basis_functions),stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error!'
+     allocate(f_z(ntheta_coil*nzeta_coil, num_basis_functions),stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error!'
+     allocate(d_x(ntheta_coil*nzeta_coil),stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error!'
+     allocate(d_y(ntheta_coil*nzeta_coil),stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error!'
+     allocate(d_z(ntheta_coil*nzeta_coil),stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error!'
+  end if
+     
   d_x = reshape((net_poloidal_current_Amperes * drdtheta_coil(1,:,1:nzeta_coil) - net_toroidal_current_Amperes * drdzeta_coil(1,:,1:nzeta_coil)) / twopi, &
        (/ ntheta_coil*nzeta_coil /))
   d_y = reshape((net_poloidal_current_Amperes * drdtheta_coil(2,:,1:nzeta_coil) - net_toroidal_current_Amperes * drdzeta_coil(2,:,1:nzeta_coil)) / twopi, &
@@ -116,18 +119,19 @@ subroutine build_matrices()
   call system_clock(toc)
   print *,"Done. Took",real(toc-tic)/countrate,"sec."
   
+  if (first_call) then
+     allocate(g(ntheta_plasma*nzeta_plasma, num_basis_functions),stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error!'
+     allocate(inductance(ntheta_plasma*nzeta_plasma, ntheta_coil*nzeta_coil),stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error!'
+     allocate(h(ntheta_plasma*nzeta_plasma),stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error!'     
+     allocate(Bnormal_from_net_coil_currents(ntheta_plasma,nzeta_plasma),stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error!'
+  end if
 
-  allocate(g(ntheta_plasma*nzeta_plasma, num_basis_functions),stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(inductance(ntheta_plasma*nzeta_plasma, ntheta_coil*nzeta_coil),stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(h(ntheta_plasma*nzeta_plasma),stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
   allocate(factor_for_h(3,ntheta_coil,nzetal_coil),stat=iflag)
   if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(Bnormal_from_net_coil_currents(ntheta_plasma,nzeta_plasma),stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ! Now compute g and h
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -233,15 +237,16 @@ subroutine build_matrices()
 
   call system_clock(toc)
   print *,"inductance*basis_functions:",real(toc-tic)/countrate,"sec."
-
-  allocate(matrix_B(num_basis_functions, num_basis_functions),stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(matrix_K(num_basis_functions, num_basis_functions),stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(RHS_B(num_basis_functions),stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
-  allocate(RHS_K(num_basis_functions),stat=iflag)
-  if (iflag .ne. 0) stop 'Allocation error!'
+  if (first_call) then
+     allocate(matrix_B(num_basis_functions, num_basis_functions),stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error!'
+     allocate(matrix_K(num_basis_functions, num_basis_functions),stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error!'
+     allocate(RHS_B(num_basis_functions),stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error!'
+     allocate(RHS_K(num_basis_functions),stat=iflag)
+     if (iflag .ne. 0) stop 'Allocation error!'
+  end if
   allocate(norm_normal_plasma_inv1D(ntheta_plasma*nzeta_plasma),stat=iflag)
   if (iflag .ne. 0) stop 'Allocation error!'
   allocate(norm_normal_coil_inv1D(ntheta_coil*nzeta_coil),stat=iflag)
@@ -254,6 +259,7 @@ subroutine build_matrices()
   if (iflag .ne. 0) stop 'Allocation error!'
   allocate(f_z_over_N_coil(ntheta_coil*nzeta_coil,num_basis_functions),stat=iflag)
   if (iflag .ne. 0) stop 'Allocation error!'
+  
 
   call system_clock(tic)
 
