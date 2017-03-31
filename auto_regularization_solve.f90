@@ -333,6 +333,16 @@ subroutine auto_regularization_solve
      print *,"*******************************************************************************"
      print *,"*******************************************************************************"
   end if
+  deallocate(matrix)
+  deallocate(RHS)
+  deallocate(solution)
+  deallocate(WORK)
+  deallocate(IPIV)
+  deallocate(KDifference_x)
+  deallocate(KDifference_y)
+  deallocate(Kdifference_z)
+  deallocate(this_K2_times_N)
+  deallocate(this_current_potential)
 
 contains
  
