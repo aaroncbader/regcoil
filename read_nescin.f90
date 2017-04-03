@@ -23,15 +23,7 @@ subroutine read_nescin(nescin_filename, r, drdtheta, drdzeta, d2rdtheta2, d2rdth
   character(300) :: myline
   character(*), parameter :: matchString = "------ Current Surface"
 
-  r=0
-  drdtheta=0
-  drdzeta=0
-
-  if (compute_2nd_derivs) then
-     d2rdtheta2 = 0
-     d2rdthetadzeta = 0
-     d2rdzeta2 = 0
-  end if
+  
 
   call safe_open(iunit, istat, trim(nescin_filename), 'old', 'formatted')
   if (istat .ne. 0) then
@@ -93,7 +85,10 @@ subroutine read_nescin(nescin_filename, r, drdtheta, drdzeta, d2rdtheta2, d2rdth
   end do
   
   close(iunit)
+ 
+  
   call calc_nescin_vars(r, ntotal_ws, xm_ws, xn_ws, rmnc_ws, zmns_ws, rmns_ws, zmnc_ws, drdtheta, drdzeta, d2rdtheta2, d2rdthetadzeta, d2rdzeta2, ntheta, nzetal, theta, zetal, compute_2nd_derivs)
+ 
  
 end subroutine  read_nescin
 
@@ -120,6 +115,16 @@ subroutine calc_nescin_vars(r, ntotal, xm_ws, xn_ws, rmnc_ws, zmns_ws, rmns_ws, 
   real(dp) :: d2sinangledtheta2, d2sinangledthetadzeta, d2sinangledzeta2
   real(dp) :: d2cosangledtheta2, d2cosangledthetadzeta, d2cosangledzeta2
 
+  r=0
+  drdtheta=0
+  drdzeta=0
+
+  if (compute_2nd_derivs) then
+     d2rdtheta2 = 0
+     d2rdthetadzeta = 0
+     d2rdzeta2 = 0
+  end if
+
   do k = 1, ntotal_ws
      m = xm_ws(k)
      n = xn_ws(k)
@@ -128,7 +133,6 @@ subroutine calc_nescin_vars(r, ntotal, xm_ws, xn_ws, rmnc_ws, zmns_ws, rmns_ws, 
      rmns = rmns_ws(k)
      zmnc = zmnc_ws(k)
      
-
      do izeta = 1,nzetal
         angle2 = zetal(izeta)
         sinangle2 = sin(angle2)
@@ -165,6 +169,7 @@ subroutine calc_nescin_vars(r, ntotal, xm_ws, xn_ws, rmnc_ws, zmns_ws, rmns_ws, 
            drdzeta(2,itheta,izeta) = drdzeta(2,itheta,izeta) + rmnc * (dcosangledzeta * sinangle2 + cosangle * dsinangle2dzeta) &
                 + rmns * (dsinangledzeta * sinangle2 + sinangle * dsinangle2dzeta)
            drdzeta(3,itheta,izeta) = drdzeta(3,itheta,izeta) + zmns * dsinangledzeta + zmnc * dcosangledzeta
+           
 
            if (compute_2nd_derivs) then
               d2rdtheta2(1,itheta,izeta) = d2rdtheta2(1,itheta,izeta) + rmnc * d2cosangledtheta2 * cosangle2 + rmns * d2sinangledtheta2 * cosangle2
@@ -190,6 +195,7 @@ subroutine calc_nescin_vars(r, ntotal, xm_ws, xn_ws, rmnc_ws, zmns_ws, rmns_ws, 
         end do
      end do
   end do
+ 
 
 end subroutine calc_nescin_vars
  
