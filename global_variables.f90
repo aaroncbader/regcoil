@@ -5,6 +5,7 @@ module global_variables
   implicit none
 
   integer :: general_option=1
+  logical :: verbose=.true.
 
   integer :: ntheta_plasma=64, nzeta_plasma=64, nzetal_plasma
   integer :: ntheta_coil=64, nzeta_coil=64, nzetal_coil

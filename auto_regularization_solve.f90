@@ -68,7 +68,7 @@ subroutine auto_regularization_solve
   ! Call LAPACK's DSYSV in query mode to determine the optimal size of the work array
   call DSYSV('U',num_basis_functions, 1, matrix, num_basis_functions, IPIV, RHS, num_basis_functions, WORK, -1, INFO)
   LWORK = WORK(1)
-  print *,"Optimal LWORK:",LWORK
+  if (verbose) print *,"Optimal LWORK:",LWORK
   deallocate(WORK)
   allocate(WORK(LWORK), stat=iflag)
   if (iflag .ne. 0) stop 'Allocation error!'  
@@ -179,7 +179,7 @@ subroutine auto_regularization_solve
         stop
      end select
 
-     print "(a,es10.3,a,i3,a,i3,a)"," Solving system for lambda=",lambda(ilambda)," (",ilambda," of at most ",nlambda,")"
+     if (verbose) print "(a,es10.3,a,i3,a,i3,a)"," Solving system for lambda=",lambda(ilambda)," (",ilambda," of at most ",nlambda,")"
      call system_clock(tic,countrate)
 
      ! Done choosing the next lambda. Now comes the main solve.
@@ -194,7 +194,7 @@ subroutine auto_regularization_solve
      end if
 
      call system_clock(toc)
-     print *,"  Additions: ",real(toc-tic)/countrate," sec."
+     if (verbose) print *,"  Additions: ",real(toc-tic)/countrate," sec."
      call system_clock(tic)
 
      ! Compute solution = matrix \ RHS.
@@ -208,7 +208,7 @@ subroutine auto_regularization_solve
      solution = RHS
 
      call system_clock(toc)
-     print *,"  DSYSV: ",real(toc-tic)/countrate," sec."
+     if (verbose) print *,"  DSYSV: ",real(toc-tic)/countrate," sec."
      call system_clock(tic)
 
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -244,9 +244,9 @@ subroutine auto_regularization_solve
           * sum(Bnormal_total(:,:,ilambda) * Bnormal_total(:,:,ilambda) * norm_normal_plasma)
 
      call system_clock(toc)
-     print *,"  Diagnostics: ",real(toc-tic)/countrate," sec."
-     print "(a,es10.3,a,es10.3)","   chi2_B:",chi2_B(ilambda),",  chi2_K:",chi2_K(ilambda)
-     print "(a,es10.3,a,es10.3,a,es10.3)","   max(B_n):",max_Bnormal(ilambda),",  max(K):",max_K(ilambda),",  rms K:",sqrt(chi2_K(ilambda)/area_coil)
+     if (verbose) print *,"  Diagnostics: ",real(toc-tic)/countrate," sec."
+     if (verbose) print "(a,es10.3,a,es10.3)","   chi2_B:",chi2_B(ilambda),",  chi2_K:",chi2_K(ilambda)
+     if (verbose) print "(a,es10.3,a,es10.3,a,es10.3)","   max(B_n):",max_Bnormal(ilambda),",  max(K):",max_K(ilambda),",  rms K:",sqrt(chi2_K(ilambda)/area_coil)
 
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      ! Done computing diagnostics.
@@ -258,26 +258,30 @@ subroutine auto_regularization_solve
      if (stage==2 .and. (last_above_target .neqv. initial_above_target)) then
         ! If we've bracketed the target, move on to stage 3.
         next_stage = 3  
-        print *,"Target current density has been bracketed."
+        if (verbose) print *,"Target current density has been bracketed."
      end if
      if (stage==10 .and. last_above_target) then
-        print *,"*******************************************************************************"
-        print *,"*******************************************************************************"
-        print *,"Error! The current_density_target you have set is not achievable because"
-        print *,"it is too low."
-        print *,"*******************************************************************************"
-        print *,"*******************************************************************************"
+        if (verbose) then
+           print *,"*******************************************************************************"
+           print *,"*******************************************************************************"
+           print *,"Error! The current_density_target you have set is not achievable because"
+           print *,"it is too low."
+           print *,"*******************************************************************************"
+           print *,"*******************************************************************************"
+        end if
         Nlambda = ilambda
         exit_code = -2
         exit
      end if
      if (stage==11 .and. (.not. last_above_target)) then
-        print *,"*******************************************************************************"
-        print *,"*******************************************************************************"
-        print *,"Error! The current_density_target you have set is not achievable because"
-        print *,"it is too high."
-        print *,"*******************************************************************************"
-        print *,"*******************************************************************************"
+        if (verbose) then
+           print *,"*******************************************************************************"
+           print *,"*******************************************************************************"
+           print *,"Error! The current_density_target you have set is not achievable because"
+           print *,"it is too high."
+           print *,"*******************************************************************************"
+           print *,"*******************************************************************************"
+        end if
         Nlambda = ilambda
         exit_code = -3
         exit
@@ -315,7 +319,7 @@ subroutine auto_regularization_solve
         Brendt_xm = 0.5*(Brendt_c - Brendt_b)
         if (abs(Brendt_xm) <= Brendt_tol1 .or. (Brendt_fb==0)) then
            ! We met the requested tolerance
-           print *,"Requested tolerance has been met."
+           if (verbose) print *,"Requested tolerance has been met."
            exit_code=0
            Nlambda = ilambda
            exit
@@ -327,11 +331,13 @@ subroutine auto_regularization_solve
   chi2_B_target = chi2_B(Nlambda)
 
   if (exit_code == -1) then
-     print *,"*******************************************************************************"
-     print *,"*******************************************************************************"
-     print *,"The lambda search did not converge within Nlambda iterations!"
-     print *,"*******************************************************************************"
-     print *,"*******************************************************************************"
+     if (verbose) then
+        print *,"*******************************************************************************"
+        print *,"*******************************************************************************"
+        print *,"The lambda search did not converge within Nlambda iterations!"
+        print *,"*******************************************************************************"
+        print *,"*******************************************************************************"
+     end if
   end if
   deallocate(matrix)
   deallocate(RHS)

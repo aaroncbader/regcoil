@@ -247,7 +247,7 @@ module init_surface_mod
     end subroutine calc_normals
     
     subroutine calc_volume(ntheta, nzetal, r, dtheta, dzeta, sum_norm_normal, area)
-      use global_variables, only: nfp, volume_coil
+      use global_variables, only: nfp, volume_coil, verbose
       use stel_kinds
 
       integer, intent(in) :: ntheta, nzetal
@@ -271,7 +271,7 @@ module init_surface_mod
            * (r(3,1,:)-r(3,ntheta,:))) ! dZ
       volume_coil = abs(volume_coil * dzeta / 2) ! r includes all nfp periods already, so no factor of nfp needed.
       deallocate(major_R_squared)
-      print "(a,es10.3,a,es10.3,a)"," Coil surface area:",area," m^2. Volume:",volume_coil," m^3."
+      if (verbose) print "(a,es10.3,a,es10.3,a)"," Coil surface area:",area," m^2. Volume:",volume_coil," m^3."
     end subroutine calc_volume
 
   end module init_surface_mod

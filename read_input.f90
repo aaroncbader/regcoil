@@ -18,7 +18,7 @@ subroutine read_input
        nescin_filename, efit_filename, efit_psiN, efit_num_modes, &
        mpol_transform_refinement, ntor_transform_refinement, &
        net_poloidal_current_Amperes, net_toroidal_current_Amperes, &
-       load_bnorm, bnorm_filename, &
+       load_bnorm, bnorm_filename, verbose, &
        shape_filename_plasma, nlambda, lambda_min, lambda_max, general_option, nescout_filename, &
        target_option, current_density_target, lambda_search_tolerance
 

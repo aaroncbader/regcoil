@@ -29,7 +29,7 @@ subroutine build_matrices(first_call)
 
 
   call system_clock(tic,countrate)
-  print *,"Initializing basis functions and f"
+  if (verbose) print *,"Initializing basis functions and f"
   
   ! Initialize Fourier arrays
   call init_Fourier_modes(mpol_coil, ntor_coil, mnmax_coil, xm_coil, xn_coil, first_call)
@@ -117,7 +117,7 @@ subroutine build_matrices(first_call)
   end do
   
   call system_clock(toc)
-  print *,"Done. Took",real(toc-tic)/countrate,"sec."
+  if (verbose) print *,"Done. Took",real(toc-tic)/countrate,"sec."
   
   if (first_call) then
      allocate(g(ntheta_plasma*nzeta_plasma, num_basis_functions),stat=iflag)
@@ -141,11 +141,11 @@ subroutine build_matrices(first_call)
   factor_for_h = net_poloidal_current_Amperes * drdtheta_coil - net_toroidal_current_Amperes * drdzeta_coil
 
   call system_clock(tic,countrate)
-  print *,"Building inductance matrix and h."
+  if (verbose) print *,"Building inductance matrix and h."
   !$OMP PARALLEL
 
   !$OMP MASTER
-  print *,"  Number of OpenMP threads:",omp_get_num_threads()
+  if (verbose) print *,"  Number of OpenMP threads:",omp_get_num_threads()
   !$OMP END MASTER
 
   ! Note: the outermost loop below must be over the plasma variables rather than over the coil variables.
@@ -199,7 +199,7 @@ subroutine build_matrices(first_call)
   !$OMP END PARALLEL
 
   call system_clock(toc)
-  print *,"Done. Took",real(toc-tic)/countrate,"sec."
+  if (verbose) print *,"Done. Took",real(toc-tic)/countrate,"sec."
   
   h = h * (dtheta_coil*dzeta_coil*mu0/(8*pi*pi))
   inductance = inductance * (mu0/(4*pi))
@@ -236,7 +236,7 @@ subroutine build_matrices(first_call)
   call DGEMM(TRANSA,TRANSB,M,N,K,BLAS_ALPHA,inductance,LDA,basis_functions,LDB,BLAS_BETA,g,LDC)
 
   call system_clock(toc)
-  print *,"inductance*basis_functions:",real(toc-tic)/countrate,"sec."
+  if (verbose) print *,"inductance*basis_functions:",real(toc-tic)/countrate,"sec."
   if (first_call) then
      allocate(matrix_B(num_basis_functions, num_basis_functions),stat=iflag)
      if (iflag .ne. 0) stop 'Allocation error!'
@@ -267,7 +267,7 @@ subroutine build_matrices(first_call)
        reshape(Bnormal_from_plasma_current+Bnormal_from_net_coil_currents, (/ ntheta_plasma*nzeta_plasma /)), g)
 
   call system_clock(toc)
-  print *,"Form RHS_B:",real(toc-tic)/countrate,"sec."
+  if (verbose) print *,"Form RHS_B:",real(toc-tic)/countrate,"sec."
   call system_clock(tic)
 
   norm_normal_plasma_inv1D = reshape(1/norm_normal_plasma, (/ ntheta_plasma*nzeta_plasma /))
@@ -283,7 +283,7 @@ subroutine build_matrices(first_call)
   deallocate(norm_normal_coil_inv1D)
 
   call system_clock(toc)
-  print *,"Prepare for matrix_B:",real(toc-tic)/countrate,"sec."
+  if (verbose) print *,"Prepare for matrix_B:",real(toc-tic)/countrate,"sec."
   call system_clock(tic)
 
 
@@ -304,7 +304,7 @@ subroutine build_matrices(first_call)
   call DGEMM(TRANSA,TRANSB,M,N,K,BLAS_ALPHA,g,LDA,g_over_N_plasma,LDB,BLAS_BETA,matrix_B,LDC)
 
   call system_clock(toc)
-  print *,"matmul for matrix_B:",real(toc-tic)/countrate,"sec."
+  if (verbose) print *,"matmul for matrix_B:",real(toc-tic)/countrate,"sec."
 
   deallocate(g_over_N_plasma)
     
@@ -330,7 +330,7 @@ subroutine build_matrices(first_call)
   call DGEMM(TRANSA,TRANSB,M,N,K,BLAS_ALPHA,f_x,LDA,f_x_over_N_coil,LDB,BLAS_BETA,matrix_K,LDC)
 
   call system_clock(toc)
-  print *,"matmul 1 for matrix_K:",real(toc-tic)/countrate,"sec."
+  if (verbose) print *,"matmul 1 for matrix_K:",real(toc-tic)/countrate,"sec."
 
   call system_clock(tic)
   ! Here we carry out matrix_K += dtheta*dzeta*(f_y ^ T) * f_y_over_N_coil
@@ -350,7 +350,7 @@ subroutine build_matrices(first_call)
   call DGEMM(TRANSA,TRANSB,M,N,K,BLAS_ALPHA,f_y,LDA,f_y_over_N_coil,LDB,BLAS_BETA,matrix_K,LDC)
 
   call system_clock(toc)
-  print *,"matmul 2 for matrix_K:",real(toc-tic)/countrate,"sec."
+  if (verbose) print *,"matmul 2 for matrix_K:",real(toc-tic)/countrate,"sec."
 
   call system_clock(tic)
   ! Here we carry out matrix_K += dtheta*dzeta*(f_z ^ T) * f_z_over_N_coil
@@ -370,7 +370,7 @@ subroutine build_matrices(first_call)
   call DGEMM(TRANSA,TRANSB,M,N,K,BLAS_ALPHA,f_z,LDA,f_z_over_N_coil,LDB,BLAS_BETA,matrix_K,LDC)
 
   call system_clock(toc)
-  print *,"matmul 3 for matrix_K:",real(toc-tic)/countrate,"sec."
+  if (verbose) print *,"matmul 3 for matrix_K:",real(toc-tic)/countrate,"sec."
 
 
 
@@ -380,7 +380,7 @@ subroutine build_matrices(first_call)
        * (dtheta_coil*dzeta_coil)
 
   call system_clock(toc)
-  print *,"Matmuls for RHS_K:",real(toc-tic)/countrate,"sec."
+  if (verbose) print *,"Matmuls for RHS_K:",real(toc-tic)/countrate,"sec."
 
   deallocate(f_x_over_N_coil)
   deallocate(f_y_over_N_coil)
