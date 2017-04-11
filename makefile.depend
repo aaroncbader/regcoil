@@ -10,7 +10,7 @@ OBJ_FILES = regcoil.o optimize.o auto_regularization_solve.o build_matrices.o \
 	solve.o svd_scan.o validate_input.o write_output.o
 
 # Dependencies:
-regcoil.o: global_variables.o init_plasma_mod.o
+regcoil.o: global_variables.o init_plasma_mod.o optimize.o
 auto_regularization_solve.o: global_variables.o
 build_matrices.o: global_variables.o init_Fourier_modes_mod.o
 compute_lambda.o: global_variables.o
@@ -23,7 +23,7 @@ init_Fourier_modes_mod.o:
 init_coil_surface.o: global_variables.o init_surface_mod.o
 init_plasma_mod.o: global_variables.o read_efit_mod.o
 init_surface_mod.o: compute_offset_surface_mod.o global_variables.o
-optimize: global_variables.o
+optimize: global_variables.o init_surface_mod.o
 read_bnorm.o: global_variables.o
 read_efit_mod.o: splines.o
 read_input.o: global_variables.o

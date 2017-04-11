@@ -4,6 +4,7 @@ program regcoil
 
   use global_variables, only: totalTime, outputFilename, general_option
   use init_plasma_mod
+  use optimize
 
   implicit none
 
@@ -35,7 +36,7 @@ program regcoil
   case (4)
      call auto_regularization_solve()
   case (5)
-     call optimize() 
+     call run_optimize() 
   case default
      print *,"Invalid general_option:",general_option
      stop
