@@ -1,7 +1,7 @@
 !This will eventually be a subroutine to call the winding surface optimization
 module optimize
   use stel_kinds
-  integer :: npop = 100 
+  integer :: npop = 100
   real(dp), dimension(:,:), allocatable :: xarr !array to pass into swarm
   real(dp), dimension(:), allocatable :: ub, lb !starting bounds
 
@@ -23,9 +23,23 @@ subroutine run_optimize
   r0 = rmnc_ws(6)
   print *,'original r0',r0
   !call auto_regularization_solve()
-  
+  allocate(ub(ntotal_ws*2))
+  allocate(lb(ntotal_ws*2))
+
   x(1:ntotal_ws) = rmnc_ws
   x(ntotal_ws+1:ntotal_ws*2) = zmns_ws
+ 
+  !make initial bounds guesses
+  do i = 1,ntotal_ws*2
+     if (x(i) > 0) then
+        ub(i) = x(i)*2
+        lb(i) = x(i)/2
+     else
+        ub(i) = x(i)/2
+        lb(i) = x(i)*2
+     end if
+     print *,lb(i),x(i),ub(i)
+  end do
   do i = 0,1
      x(6) = r0 + i/10.
      call get_lambda(x, f)
