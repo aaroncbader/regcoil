@@ -8,7 +8,7 @@ module pswarm
   real(dp), dimension(:), allocatable :: ps_bf
   real(dp) :: ps_gbf
   integer :: ps_n, ps_npop, ps_gb
-  integer :: ps_debug
+  integer :: ps_debug=0
 
 contains 
 !Allocate the particle swarm data, these include the actual
@@ -27,15 +27,23 @@ subroutine alloc_ps()
 end subroutine alloc_ps
 
 !Initialize the particles with random values
-subroutine init_pop(fcn)
+subroutine init_pop(fcn, xguess)
 
   use stel_kinds
   implicit none
   integer :: n, i
   real(dp) :: x, diff
+  real(dp), dimension(ps_n) :: xguess
   external fcn
+  ps_x(1,:) = xguess
+  ps_v(1,:) = 0
+  call fcn(ps_x(1,:), ps_bf(1))
+  ps_gbf = ps_bf(1)
+  ps_bx(1,:) = ps_x(1,:)
+  ps_gbx = ps_x(1,:)
+  
   call random_seed()
-  do n = 1,ps_npop
+  do n = 2,ps_npop
      do i = 1,ps_n
         call random_number(x)
         diff = ps_ub(i) - ps_lb(i)
@@ -47,15 +55,12 @@ subroutine init_pop(fcn)
      !evaluate the function
      call fcn(ps_x(n,:), ps_bf(n))
      !set the particle best to current value
-     if (n == 1) then
-        ps_gbf = ps_bf(1)
-        ps_gbx = ps_x(1,:)
-     else
-        if (ps_bf(n) < ps_gbf) then
-           ps_gbf = ps_bf(n)
-           ps_gbx = ps_x(n,:)
-        end if
+
+     if (ps_bf(n) < ps_gbf) then
+        ps_gbf = ps_bf(n)
+        ps_gbx = ps_x(n,:)
      end if
+     
   end do
 end subroutine init_pop
 
@@ -115,20 +120,22 @@ subroutine iterate(fcn)
   end do
 end subroutine iterate
 
-subroutine swarm_optimize(nx, pop, lb, ub, n_iter, fcn)
+subroutine swarm_optimize(nx, pop, lb, ub, n_iter, fcn, xguess)
   use stel_kinds
   implicit none
   integer :: n, pop, n_iter, i, nx
-  real(dp), dimension(nx) :: lb, ub
+  real(dp), dimension(nx) :: lb, ub, xguess
   external fcn
 
   ps_npop = pop
   ps_n = nx
 
   call alloc_ps()
+  
   ps_lb = lb
   ps_ub = ub
-  call init_pop(fcn)
+  call init_pop(fcn, xguess)
+  
   if (ps_debug == 1) then
      write (*,*) 'initial setup'
      do n = 1,ps_npop
@@ -149,7 +156,11 @@ subroutine swarm_optimize(nx, pop, lb, ub, n_iter, fcn)
            end do
         end if
      end if
+     write (*,*) 'iter ',i,'complete, minimum value: ',ps_gbf
   end do
+
+  xguess = ps_gbx
+  print *,'final minimal calculated lambda',ps_gbf
 
 end subroutine swarm_optimize
   

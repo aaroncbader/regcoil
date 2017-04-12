@@ -20,33 +20,30 @@ subroutine run_optimize
   real(dp), dimension(ntotal_ws*2) :: x
 
 
-  !The sixth value is the major radius. We'll vary this a little to play with it
-  !r0 = rmnc_ws(6)
-  !print *,'original r0',r0
-  !call auto_regularization_solve()
+
   allocate(ub(ntotal_ws*2))
   allocate(lb(ntotal_ws*2))
 
   x(1:ntotal_ws) = rmnc_ws
   x(ntotal_ws+1:ntotal_ws*2) = zmns_ws
- 
+
   !make initial bounds guesses
   do i = 1,ntotal_ws*2
      if (x(i) > 0) then
-        ub(i) = x(i)*2
-        lb(i) = x(i)/2
+        ub(i) = x(i)*1.1
+        lb(i) = x(i)/1.1
      else
-        ub(i) = x(i)/2
-        lb(i) = x(i)*2
+        ub(i) = x(i)/1.1
+        lb(i) = x(i)*1.1
      end if
-     !print *,lb(i),x(i),ub(i)
   end do
-  call swarm_optimize(ntotal_ws, 10, lb, ub, 2, get_lambda)
-  ! do i = 0,1
-  !    x(6) = r0 + i/10.
-  !    call get_lambda(x, f)
-  !    print *,'calc of f for r',x(6),f
-  ! end do
+  call swarm_optimize(ntotal_ws*2, 3, lb, ub, 2, get_lambda, x)
+  print *,'best surface'
+  print *,'m, n, rmnc, zmns'
+  do i = 1,ntotal_ws
+     print *,xm_ws(i), xn_ws(i), x(i), x(ntotal_ws+i)
+  end do
+     
     
 end subroutine run_optimize
 
@@ -55,6 +52,7 @@ subroutine get_lambda(x, f)
   use init_surface_mod
 
   implicit none
+  integer :: i
   real(dp) :: r0, dtheta, dzeta, f
   real(dp), dimension(ntotal_ws*2) :: x
   real(dp) :: d2rdtheta2, d2rdthetadzeta, d2rdzeta2 !dummy variables
@@ -74,12 +72,16 @@ subroutine get_lambda(x, f)
   call build_matrices(.False.)
 
   call auto_regularization_solve()
+  !print *,'in get_lambda'
+  !do i =1,ntotal_ws
+  !   print *,i,rmnc_ws(i), zmns_ws(i)
+  !end do
+
   if (exit_code == 0) then 
      f = lambda(nlambda)
   else
      f = 1.0
   end if
-  print *,'final f',f
   
 end subroutine get_lambda
 end module optimize
