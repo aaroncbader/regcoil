@@ -5,7 +5,7 @@ OBJ_FILES = regcoil.o optimize.o auto_regularization_solve.o build_matrices.o \
 	compute_offset_surface_mod.o \
 	expand_plasma_surface.o fzero.o global_variables.o \
 	init_Fourier_modes_mod.o init_coil_surface.o init_plasma_mod.o \
-	init_surface_mod.o read_bnorm.o \
+	init_surface_mod.o read_bnorm.o pswarm.o\
 	read_efit_mod.o read_input.o read_nescin.o splines.o \
 	solve.o svd_scan.o validate_input.o write_output.o
 
@@ -23,7 +23,7 @@ init_Fourier_modes_mod.o:
 init_coil_surface.o: global_variables.o init_surface_mod.o
 init_plasma_mod.o: global_variables.o read_efit_mod.o
 init_surface_mod.o: compute_offset_surface_mod.o global_variables.o
-optimize: global_variables.o init_surface_mod.o
+optimize: global_variables.o init_surface_mod.o pswarm.o
 read_bnorm.o: global_variables.o
 read_efit_mod.o: splines.o
 read_input.o: global_variables.o
@@ -31,5 +31,6 @@ read_nescin.o: global_variables.o
 splines.o:
 solve.o: global_variables.o
 svd_scan.o: global_variables.o
+pswarm.o:
 validate_input.o: global_variables.o
 write_output.o: global_variables.o
