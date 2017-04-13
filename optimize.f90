@@ -37,7 +37,7 @@ subroutine run_optimize
         lb(i) = x(i)*1.1
      end if
   end do
-  call swarm_optimize(ntotal_ws*2, 10, lb, ub, 5, get_lambda, x)
+  call swarm_optimize(ntotal_ws*2, opt_npop, lb, ub, opt_niter, get_lambda, x)
   print *,'best surface'
   print *,'m, n, rmnc, zmns'
   do i = 1,ntotal_ws

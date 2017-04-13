@@ -53,6 +53,7 @@ module global_variables
   integer :: ntor_coil=12
   integer :: mnmax_coil
   integer :: num_basis_functions
+  integer :: opt_npop=10, opt_niter=10
   integer, dimension(:), allocatable :: xm_coil, xn_coil
 
   real(dp), dimension(:), allocatable :: rmns, zmnc, rmnc, zmns

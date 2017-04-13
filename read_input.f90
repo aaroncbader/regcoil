@@ -14,7 +14,7 @@ subroutine read_input
        R0_plasma, R0_coil, a_plasma, a_coil, &
        separation, wout_filename, &
        save_level, nfp_imposed, symmetry_option, &
-       mpol_coil, ntor_coil, &
+       mpol_coil, ntor_coil, opt_npop, opt_niter,&
        nescin_filename, efit_filename, efit_psiN, efit_num_modes, &
        mpol_transform_refinement, ntor_transform_refinement, &
        net_poloidal_current_Amperes, net_toroidal_current_Amperes, &
