@@ -37,7 +37,7 @@ subroutine run_optimize
         lb(i) = x(i)*1.1
      end if
   end do
-  call swarm_optimize(ntotal_ws*2, 3, lb, ub, 2, get_lambda, x)
+  call swarm_optimize(ntotal_ws*2, 10, lb, ub, 5, get_lambda, x)
   print *,'best surface'
   print *,'m, n, rmnc, zmns'
   do i = 1,ntotal_ws
@@ -76,11 +76,12 @@ subroutine get_lambda(x, f)
   !do i =1,ntotal_ws
   !   print *,i,rmnc_ws(i), zmns_ws(i)
   !end do
+  
 
   if (exit_code == 0) then 
-     f = lambda(nlambda)
+     f = (volume_coil)**(1.0/3.0) + log(lambda(nlambda))
   else
-     f = 1.0
+     f = 100.0
   end if
   
 end subroutine get_lambda
