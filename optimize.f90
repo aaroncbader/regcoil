@@ -79,7 +79,7 @@ subroutine get_lambda(x, f)
   
 
   if (exit_code == 0) then 
-     f = (volume_coil)**(1.0/3.0) + log(lambda(nlambda_autoreg))
+     f = -1*((volume_coil)**(1.0/3.0) + log(lambda(nlambda_autoreg)))
   else
      f = 100.0
   end if
