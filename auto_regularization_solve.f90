@@ -269,7 +269,7 @@ subroutine auto_regularization_solve
            print *,"*******************************************************************************"
            print *,"*******************************************************************************"
         end if
-        Nlambda = ilambda
+        Nlambda_autoreg = ilambda
         exit_code = -2
         exit
      end if
@@ -282,7 +282,7 @@ subroutine auto_regularization_solve
            print *,"*******************************************************************************"
            print *,"*******************************************************************************"
         end if
-        Nlambda = ilambda
+        Nlambda_autoreg = ilambda
         exit_code = -3
         exit
      end if
@@ -321,14 +321,14 @@ subroutine auto_regularization_solve
            ! We met the requested tolerance
            if (verbose) print *,"Requested tolerance has been met."
            exit_code=0
-           Nlambda = ilambda
+           Nlambda_autoreg = ilambda
            exit
         end if
      end if
      stage = next_stage
   end do
 
-  chi2_B_target = chi2_B(Nlambda)
+  chi2_B_target = chi2_B(Nlambda_autoreg)
 
   if (exit_code == -1) then
      if (verbose) then

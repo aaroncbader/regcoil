@@ -82,7 +82,7 @@ module global_variables
   character(len=200) :: bnorm_filename=""
   real(dp) :: curpol = 1  ! number which multiplies data in bnorm file.
 
-  integer :: nlambda = 4
+  integer :: nlambda = 4, nlambda_autoreg=4
   real(dp) :: lambda_min = 1.0d-19, lambda_max = 1.0d-13
   real(dp), dimension(:), allocatable :: lambda
 
