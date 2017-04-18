@@ -47,6 +47,27 @@ subroutine run_optimize
     
 end subroutine run_optimize
 
+subroutine faux_distance(mindist)
+  use global_variables
+  
+  implicit none
+  real(dp), dimension(ntheta_coil, nzeta_coil) :: dist
+  real(dp) :: mindist
+
+  if ((ntheta_coil .ne. ntheta_plasma) .or. (nzeta_coil .ne. nzeta_plasma)) then
+     print *,'dimensions of plasma and coil do not match, fix in input'
+     mindist = 0.0
+     return
+  end if
+  
+  dist = (r_plasma(1,:,:) - r_coil(1,:,:))**2 + &
+         (r_plasma(2,:,:) - r_coil(2,:,:))**2 + &
+         (r_plasma(3,:,:) - r_coil(3,:,:))**2
+  mindist = sqrt(minval(minval(dist,1)))
+  return
+end subroutine faux_distance
+  
+
 subroutine get_lambda(x, f)
   use global_variables
   use init_surface_mod
@@ -56,7 +77,7 @@ subroutine get_lambda(x, f)
   real(dp) :: r0, dtheta, dzeta, f
   real(dp), dimension(ntotal_ws*2) :: x
   real(dp) :: d2rdtheta2, d2rdthetadzeta, d2rdzeta2 !dummy variables
-
+  real(dp) :: mindist
   
   rmnc_ws = x(1:ntotal_ws)
   zmns_ws = x(ntotal_ws+1:ntotal_ws*2)
@@ -76,6 +97,7 @@ subroutine get_lambda(x, f)
   !do i =1,ntotal_ws
   !   print *,i,rmnc_ws(i), zmns_ws(i)
   !end do
+  call faux_distance(mindist)
   
 
   if (exit_code == 0) then 
@@ -83,6 +105,9 @@ subroutine get_lambda(x, f)
   else
      f = 100.0
   end if
-  
+  if (mindist < 0.3) then
+     f = f+50
+  end if
+
 end subroutine get_lambda
 end module optimize
