@@ -93,21 +93,20 @@ subroutine get_lambda(x, f)
   call build_matrices(.False.)
 
   call auto_regularization_solve()
-  !print *,'in get_lambda'
-  !do i =1,ntotal_ws
-  !   print *,i,rmnc_ws(i), zmns_ws(i)
-  !end do
+  
   call faux_distance(mindist)
   
 
   if (exit_code == 0) then 
-     f = -1*((volume_coil)**(1.0/3.0) + log(lambda(nlambda_autoreg)))
+     !f = -1*((volume_coil)**(1.0/3.0) + log(lambda(nlambda_autoreg)))
+     f = chi2_B(nlambda_autoreg) - (volume_coil)**(1.0/3.0)
   else
      f = 100.0
   end if
   if (mindist < 0.3) then
      f = f+50
   end if
+
 
 end subroutine get_lambda
 end module optimize
