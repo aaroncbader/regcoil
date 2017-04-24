@@ -145,7 +145,7 @@ subroutine build_matrices(first_call)
   !$OMP PARALLEL
 
   !$OMP MASTER
-  if (verbose) print *,"  Number of OpenMP threads:",omp_get_num_threads()
+  if (verbose .and. num_procs==1) print *,"  Number of OpenMP threads:",omp_get_num_threads()
   !$OMP END MASTER
 
   ! Note: the outermost loop below must be over the plasma variables rather than over the coil variables.
