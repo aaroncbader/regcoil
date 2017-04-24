@@ -2,16 +2,23 @@
 
 program regcoil
 
-  use global_variables, only: totalTime, outputFilename, general_option
+  use global_variables, only: totalTime, outputFilename, general_option, my_pn, num_procs
   use init_plasma_mod
   use optimize
 
   implicit none
+  include 'mpif.h'
 
-  integer :: tic, toc, countrate
+  integer :: tic, toc, countrate, ierr
 
-  print *,"This is REGCOIL,"
-  print *,"a regularized least-squares method for computing stellarator coil shapes."
+  call MPI_INIT(ierr)
+  call MPI_COMM_RANK (MPI_COMM_WORLD, my_pn, ierr)
+  call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, ierr)
+
+  if (my_pn == 0) then
+     print *,"This is REGCOIL,"
+     print *,"a regularized least-squares method for computing stellarator coil shapes."
+  end if
   call system_clock(tic,countrate)
 
   call read_input()
@@ -44,10 +51,12 @@ program regcoil
 
   call system_clock(toc)
   totalTime = real(toc-tic)/countrate
-
-  call write_output()
  
-  print *,"REGCOIL complete. Total time=",totalTime,"sec."
-  print *,"You can run regcoilPlot ",trim(outputFilename)," to plot results."
+  if (my_pn == 0) then
+     call write_output()
+     print *,"REGCOIL complete. Total time=",totalTime,"sec."
+     print *,"You can run regcoilPlot ",trim(outputFilename)," to plot results."
+  end if
+  call MPI_FINALIZE(ierr)
 
 end program regcoil

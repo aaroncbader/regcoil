@@ -63,7 +63,7 @@ subroutine solve
   ! Call LAPACK's DSYSV in query mode to determine the optimal size of the work array
   call DSYSV('U',num_basis_functions, 1, matrix, num_basis_functions, IPIV, RHS, num_basis_functions, WORK, -1, INFO)
   LWORK = WORK(1)
-  print *,"Optimal LWORK:",LWORK
+  if (verbose .and. my_pn==0) print *,"Optimal LWORK:",LWORK
   deallocate(WORK)
   allocate(WORK(LWORK), stat=iflag)
   if (iflag .ne. 0) stop 'Allocation error!'  
@@ -72,14 +72,14 @@ subroutine solve
   factor_theta = net_toroidal_current_Amperes / twopi
 
   do ilambda = 1,nlambda
-     print "(a,es10.3,a,i3,a,i3,a)"," Solving system for lambda=",lambda(ilambda)," (",ilambda," of ",nlambda,")"
+     if (verbose .and. my_pn==0) print "(a,es10.3,a,i3,a,i3,a)"," Solving system for lambda=",lambda(ilambda)," (",ilambda," of ",nlambda,")"
      call system_clock(tic,countrate)
 
      matrix = matrix_B + lambda(ilambda) * matrix_K
      RHS    =    RHS_B + lambda(ilambda) *    RHS_K
 
      call system_clock(toc)
-     print *,"  Additions: ",real(toc-tic)/countrate," sec."
+     if (verbose .and. my_pn==0) print *,"  Additions: ",real(toc-tic)/countrate," sec."
      call system_clock(tic)
 
      ! Compute solution = matrix \ RHS.
@@ -93,7 +93,7 @@ subroutine solve
      solution = RHS
 
      call system_clock(toc)
-     print *,"  DSYSV: ",real(toc-tic)/countrate," sec."
+     if (verbose .and. my_pn==0) print *,"  DSYSV: ",real(toc-tic)/countrate," sec."
      call system_clock(tic)
 
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -129,9 +129,11 @@ subroutine solve
           * sum(Bnormal_total(:,:,ilambda) * Bnormal_total(:,:,ilambda) * norm_normal_plasma)
 
      call system_clock(toc)
-     print *,"  Diagnostics: ",real(toc-tic)/countrate," sec."
-     print "(a,es10.3,a,es10.3)","   chi2_B:",chi2_B(ilambda),",  chi2_K:",chi2_K(ilambda)
-     print "(a,es10.3,a,es10.3,a,es10.3)","   max(B_n):",max_Bnormal(ilambda),",  max(K):",max_K(ilambda),",  rms K:",sqrt(chi2_K(ilambda)/area_coil)
+     if (verbose .and. my_pn==0) then
+        print *,"  Diagnostics: ",real(toc-tic)/countrate," sec."
+        print "(a,es10.3,a,es10.3)","   chi2_B:",chi2_B(ilambda),",  chi2_K:",chi2_K(ilambda)
+        print "(a,es10.3,a,es10.3,a,es10.3)","   max(B_n):",max_Bnormal(ilambda),",  max(K):",max_K(ilambda),",  rms K:",sqrt(chi2_K(ilambda)/area_coil)
+     end if
   end do
 
 end subroutine solve

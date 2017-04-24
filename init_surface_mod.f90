@@ -13,7 +13,7 @@ module init_surface_mod
          geometry_option, R_specified, a, separation, dtheta, dzeta, nescin_filename, which_surface)
 
       use compute_offset_surface_mod
-      use global_variables, only: R0_plasma, nfp
+      use global_variables, only: R0_plasma, nfp, my_pn, num_procs, verbose
       use stel_kinds
       use stel_constants
       use omp_lib
@@ -87,7 +87,7 @@ module init_surface_mod
 !!$      d2rdzeta2 = 0
 
       if (geometry_option==3 .or. geometry_option == 4) then
-         print *,"  Reading coil surface from nescin file ",trim(nescin_filename)
+         if (verbose .and. my_pn==0) print *,"  Reading coil surface from nescin file ",trim(nescin_filename)
 
          call read_nescin(nescin_filename, r, drdtheta, drdzeta, d2rdtheta2, d2rdthetadzeta, d2rdzeta2, &
               ntheta, nzetal, theta, zetal, .false.)
@@ -98,7 +98,7 @@ module init_surface_mod
       case (0,1)
          ! Torus with circular cross-section
 
-         print *,"  Building a plain circular torus."
+         if (verbose .and. my_pn==0) print *,"  Building a plain circular torus."
 
          if (geometry_option==0) then
             R0_to_use = R0_plasma
@@ -159,9 +159,9 @@ module init_surface_mod
 !!$         end if
 
          if (geometry_option==2) then
-            print "(a,f10.4,a)","   Constructing a surface offset from the plasma by ",separation," meters."
+            if (verbose .and. my_pn==0) print "(a,f10.4,a)","   Constructing a surface offset from the plasma by ",separation," meters."
          else
-            print "(a,f10.4,a)","   Constructing a surface offset from the nescin surface by ",separation," meters."
+            if (verbose .and. my_pn==0) print "(a,f10.4,a)","   Constructing a surface offset from the nescin surface by ",separation," meters."
          end if
 
          ! Finite differences to use:
@@ -178,7 +178,7 @@ module init_surface_mod
          !$OMP PARALLEL
 
          !$OMP MASTER
-         print *,"  Number of OpenMP threads:",omp_get_num_threads()
+         if (verbose .and. num_procs==1) print *,"  Number of OpenMP threads:",omp_get_num_threads()
          !$OMP END MASTER
 
          !$OMP DO PRIVATE(x_new,y_new,z_new,x_old,y_old,z_old)
@@ -247,7 +247,7 @@ module init_surface_mod
     end subroutine calc_normals
     
     subroutine calc_volume(ntheta, nzetal, r, dtheta, dzeta, sum_norm_normal, area)
-      use global_variables, only: nfp, volume_coil, verbose
+      use global_variables, only: nfp, volume_coil, verbose, my_pn
       use stel_kinds
 
       integer, intent(in) :: ntheta, nzetal
@@ -271,7 +271,7 @@ module init_surface_mod
            * (r(3,1,:)-r(3,ntheta,:))) ! dZ
       volume_coil = abs(volume_coil * dzeta / 2) ! r includes all nfp periods already, so no factor of nfp needed.
       deallocate(major_R_squared)
-      if (verbose) print "(a,es10.3,a,es10.3,a)"," Coil surface area:",area," m^2. Volume:",volume_coil," m^3."
+      if (verbose .and. my_pn==0) print "(a,es10.3,a,es10.3,a)"," Coil surface area:",area," m^2. Volume:",volume_coil," m^3."
     end subroutine calc_volume
 
   end module init_surface_mod

@@ -52,29 +52,31 @@ subroutine read_input
         end if
         stop
      end if
-     print *,"Successfully read parameters from regcoil namelist in ", trim(inputFilename), "."
+     if (verbose .and. my_pn==0) print *,"Successfully read parameters from regcoil namelist in ", trim(inputFilename), "."
   end if
   close(unit = fileUnit)
 
+  if (verbose .and. my_pn == 0) then
+     print *,"Resolution parameters:"
+     print "(a,i4)","   ntheta_plasma =",ntheta_plasma
+     print "(a,i4)","   ntheta_coil   =",ntheta_coil
+     print "(a,i4)","   nzeta_plasma  =",nzeta_plasma
+     print "(a,i4)","   nzeta_coil    =",nzeta_coil
+     print "(a,i4)","   mpol_coil     =",mpol_coil
+     print "(a,i4)","   ntor_coil     =",ntor_coil
 
-  print *,"Resolution parameters:"
-  print "(a,i4)","   ntheta_plasma =",ntheta_plasma
-  print "(a,i4)","   ntheta_coil   =",ntheta_coil
-  print "(a,i4)","   nzeta_plasma  =",nzeta_plasma
-  print "(a,i4)","   nzeta_coil    =",nzeta_coil
-  print "(a,i4)","   mpol_coil     =",mpol_coil
-  print "(a,i4)","   ntor_coil     =",ntor_coil
-
-  select case (symmetry_option)
-  case (1)
-     print *,"Symmetry: sin(m*theta - n*zeta) modes only"
-  case (2)
-     print *,"Symmetry: cos(m*theta - n*zeta) modes only"
-  case (3)
-     print *,"Symmetry: both sin(m*theta - n*zeta) and cos(m*theta - n*zeta) modes"
-  case default
-     print *,"Error! Invalid setting for symmetry_option: ",symmetry_option
-     stop
-  end select
+  
+     select case (symmetry_option)
+     case (1)
+        print *,"Symmetry: sin(m*theta - n*zeta) modes only"
+     case (2)
+        print *,"Symmetry: cos(m*theta - n*zeta) modes only"
+     case (3)
+        print *,"Symmetry: both sin(m*theta - n*zeta) and cos(m*theta - n*zeta) modes"
+     case default
+        print *,"Error! Invalid setting for symmetry_option: ",symmetry_option
+        stop
+     end select
+  end if
 
 end subroutine read_input

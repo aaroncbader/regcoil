@@ -7,6 +7,9 @@ module global_variables
   integer :: general_option=1
   logical :: verbose=.true.
 
+  !MPI stuff
+  integer :: my_pn, num_procs
+
   integer :: ntheta_plasma=64, nzeta_plasma=64, nzetal_plasma
   integer :: ntheta_coil=64, nzeta_coil=64, nzetal_coil
 

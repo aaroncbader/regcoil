@@ -9,7 +9,7 @@ subroutine init_coil_surface
   integer :: which_surface
 
   call system_clock(tic,countrate)
-  print *,"Initializing coil surface."
+  if (verbose .and. my_pn==0) print *,"Initializing coil surface."
   which_surface = 1
   call init_surface(ntheta_coil, nzeta_coil, nzetal_coil, theta_coil, zeta_coil, zetal_coil, &
        r_coil, drdtheta_coil, drdzeta_coil, &
@@ -17,7 +17,7 @@ subroutine init_coil_surface
        geometry_option_coil, R0_coil, a_coil, separation, dtheta_coil, dzeta_coil, &
        nescin_filename, which_surface)
   call system_clock(toc)
-  print *,"Done initializing coil surface. Took ",real(toc-tic)/countrate," sec."
+  if (verbose .and. my_pn==0) print *,"Done initializing coil surface. Took ",real(toc-tic)/countrate," sec."
 
 !!$  call system_clock(tic)
 !!$  print *,"Initializing outer surface."

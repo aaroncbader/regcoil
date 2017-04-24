@@ -1,7 +1,8 @@
 subroutine read_bnorm()
 
   use global_variables, only: load_bnorm, bnorm_filename, ntheta_plasma, nzeta_plasma, &
-       Bnormal_from_plasma_current, theta_plasma, zeta_plasma, nfp, curpol
+       Bnormal_from_plasma_current, theta_plasma, zeta_plasma, nfp, curpol, &
+       verbose, my_pn
   use safe_open_mod
   use stel_constants
   use stel_kinds
@@ -20,11 +21,11 @@ subroutine read_bnorm()
   Bnormal_from_plasma_current = 0
 
   if (.not. load_bnorm) then
-     print *,"Not reading a bnorm file, so Bnormal_from_plasma_current arrays will all be 0."
+     if (verbose .and. my_pn==0) print *,"Not reading a bnorm file, so Bnormal_from_plasma_current arrays will all be 0."
      return
   end if
 
-  print *,"Loading B_normal on the plasma surface due to plasma current from file ",trim(bnorm_filename)
+  if (verbose .and. my_pn==0) print *,"Loading B_normal on the plasma surface due to plasma current from file ",trim(bnorm_filename)
 
   call safe_open(iunit, i, trim(bnorm_filename), 'old', 'formatted')
   if (i .ne. 0 ) then
@@ -68,11 +69,11 @@ subroutine read_bnorm()
 
   call system_clock(toc)
   if (num_modes_added>0) then
-     print *,"Number of modes read from bnorm file:",num_modes_added
+     if (verbose .and. my_pn==0) print *,"Number of modes read from bnorm file:",num_modes_added
   else
      print *,"WARNING!!! No modes found in the bnorm file."
   end if
-  print *,"Done reading B_normal on the plasma surface due to plasma current."
-  print *,"Took ",real(toc-tic)/countrate," sec."
+  if (verbose .and. my_pn==0) print *,"Done reading B_normal on the plasma surface due to plasma current."
+  if (verbose .and. my_pn==0) print *,"Took ",real(toc-tic)/countrate," sec."
 
 end subroutine  read_bnorm

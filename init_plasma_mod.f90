@@ -36,7 +36,7 @@ contains
     integer :: fzeroFlag, mpol, ntor, jm, jn, index
     
     call system_clock(tic, countrate)
-    print *,"Initializing plasma surface."
+    if (verbose .and. my_pn==0) print *,"Initializing plasma surface."
     
     select case (geometry_option_plasma)
     case (0,1)
@@ -102,19 +102,19 @@ contains
        call read_wout_file(wout_filename, ierr, iopen)
        if (iopen .ne. 0) stop 'error opening wout file'
        if (ierr .ne. 0) stop 'error reading wout file'
-       print *,"  Successfully read VMEC data from ",trim(wout_filename)
+       if (verbose .and. my_pn==0) print *,"  Successfully read VMEC data from ",trim(wout_filename)
        
        if (geometry_option_plasma == 2) then
           ! Only use the outermost point in the full radial mesh:
           weight1 = 0
           weight2 = 1
-          print *,"  Using outermost grid point in VMEC's FULL radial grid."
+          if (verbose .and. my_pn==0) print *,"  Using outermost grid point in VMEC's FULL radial grid."
        else
           ! Average the two outermost points in the full radial mesh 
           ! to get a value on the outermost point of the half radial mesh:
           weight1 = 0.5_dp
           weight2 = 0.5_dp
-          print *,"  Using outermost grid point in VMEC's HALF radial grid."
+          if (verbose .and. my_pn==0) print *,"  Using outermost grid point in VMEC's HALF radial grid."
        end if
        
        nfp = nfp_vmec
@@ -133,7 +133,7 @@ contains
        
        xm = xm_vmec
        xn = xn_vmec
-       print *,"size of rmnc_vmec:",size(rmnc_vmec,1),size(rmnc_vmec,2)
+       if (verbose .and. my_pn==0) print *,"size of rmnc_vmec:",size(rmnc_vmec,1),size(rmnc_vmec,2)
        rmnc = rmnc_vmec(:,ns-1) * weight1 + rmnc_vmec(:,ns) * weight2
        zmns = zmns_vmec(:,ns-1) * weight1 + zmns_vmec(:,ns) * weight2
        if (lasym) then
@@ -150,7 +150,7 @@ contains
        call read_wout_file(wout_filename, ierr, iopen)
        if (iopen .ne. 0) stop 'error opening wout file'
        if (ierr .ne. 0) stop 'error reading wout file'
-       print *,"  Successfully read VMEC data from ",trim(wout_filename)
+       if (verbose .and. my_pn==0) print *,"  Successfully read VMEC data from ",trim(wout_filename)
        
        
        nfp = nfp_vmec
@@ -226,7 +226,7 @@ contains
        end do
        !close(unit=5)
        call system_clock(toc1)
-       print *,"  Time for root solving:",real(toc1-tic1)/countrate
+       if (verbose .and. my_pn==0) print *,"  Time for root solving:",real(toc1-tic1)/countrate
        
        ! Now that we have R and Z on a grid in the new coordinates, Fourier transform the results.
        
@@ -286,7 +286,7 @@ contains
           zmns(imn) = z_temp*dnorm
        end do
        call system_clock(toc1)
-       print *,"  Time for Fourier transform:",real(toc1-tic1)/countrate
+       if (verbose .and. my_pn==0) print *,"  Time for Fourier transform:",real(toc1-tic1)/countrate
        
     case (5)
        ! EFIT
@@ -449,12 +449,12 @@ contains
          * (r_plasma(3,1,:)-r_plasma(3,ntheta_plasma,:))) ! dZ
     volume_plasma = abs(volume_plasma * dzeta_plasma / 2) ! r_plasma includes all nfp periods already, so no factor of nfp needed.
     deallocate(major_R_squared)
-    print "(a,es10.3,a,es10.3,a)"," Plasma surface area:",area_plasma," m^2. Volume:",volume_plasma," m^3."
+    if (verbose .and. my_pn==0) print "(a,es10.3,a,es10.3,a)"," Plasma surface area:",area_plasma," m^2. Volume:",volume_plasma," m^3."
     
     select case (geometry_option_plasma)
     case (2,3,4)
        ! A VMEC wout file is available
-       print *,"Overriding net_poloidal_current_Amperes with value from the VMEC wout file."
+       if (verbose .and. my_pn==0) print *,"Overriding net_poloidal_current_Amperes with value from the VMEC wout file."
        ! VMEC stores the toroidal Boozer component B_zeta as "bvco", using the HALF mesh
        net_poloidal_current_Amperes = 2*pi/mu0*(1.5_dp*bvco(ns)-0.5_dp*bvco(ns-1))
        ! curpol is a number which multiplies the data in the bnorm file.
@@ -468,7 +468,7 @@ contains
     end select
     
     call system_clock(toc)
-    print *,"Done initializing plasma surface. Took ",real(toc-tic)/countrate," sec."
+    if (verbose .and. my_pn==0) print *,"Done initializing plasma surface. Took ",real(toc-tic)/countrate," sec."
 
   end subroutine init_plasma
 

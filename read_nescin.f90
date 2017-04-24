@@ -1,6 +1,6 @@
 subroutine read_nescin(nescin_filename, r, drdtheta, drdzeta, d2rdtheta2, d2rdthetadzeta, d2rdzeta2, ntheta, nzetal, theta, zetal, compute_2nd_derivs)
 
-  use global_variables, only: nfp, mnmax, rmnc_ws, zmns_ws, rmns_ws, zmnc_ws, xm_ws, xn_ws, ntotal_ws
+  use global_variables, only: nfp, mnmax, rmnc_ws, zmns_ws, rmns_ws, zmnc_ws, xm_ws, xn_ws, ntotal_ws, verbose, my_pn
   use safe_open_mod
   use stel_constants
   use stel_kinds
@@ -41,7 +41,7 @@ subroutine read_nescin(nescin_filename, r, drdtheta, drdzeta, d2rdtheta2, d2rdth
   read (iunit, *)
 
   read (iunit, *) ntotal_ws
-  print *,"  Reading",ntotal_ws,"Fourier modes from nescin"
+  if (verbose .and. my_pn==0) print *,"  Reading",ntotal_ws,"Fourier modes from nescin"
 
 
 !!$  if (geometry_option_outer==4) then
