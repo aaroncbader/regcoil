@@ -35,9 +35,9 @@ else ifeq ($(HOSTNAME),cori)
 	# For batch systems, set the following variable to the command used to run jobs. This variable is used by 'make test'.
 	REGCOIL_COMMAND_TO_SUBMIT_JOB = srun -n 1 -c 32
 else ifeq ($(HOSTNAME),"abader") 
-  FC = gfortran
-  EXTRA_COMPILE_FLAGS = -fopenmp -I/usr/lib64 -I/usr/include -ffree-line-length-none
-  EXTRA_LINK_FLAGS =  -fopenmp -L/usr/lib64 -lnetcdff  -lnetcdf -lblas -llapack
+  FC = mpif90
+  EXTRA_COMPILE_FLAGS = -fopenmp -I/home/abader/netcdf/include  -I/usr/include -ffree-line-length-none
+  EXTRA_LINK_FLAGS =  -fopenmp -L/home/abader/netcdf/lib  -lnetcdff  -lnetcdf -lblas -llapack
 
 else
   FC = mpif90
