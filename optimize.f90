@@ -14,7 +14,7 @@ subroutine run_optimize
   use pswarm
 
   implicit none
-  integer :: i,k
+  integer :: i,k, nproc
   real(dp) :: r0, dtheta, dzeta, f
   real(dp) :: d2rdtheta2, d2rdthetadzeta, d2rdzeta2 !dummy variables
   real(dp), dimension(ntotal_ws*2) :: x
@@ -37,12 +37,16 @@ subroutine run_optimize
         lb(i) = x(i)*1.1
      end if
   end do
-  call swarm_optimize(ntotal_ws*2, opt_npop, lb, ub, opt_niter, get_lambda, x)
-  print *,'best surface'
-  print *,'m, n, rmnc, zmns'
-  do i = 1,ntotal_ws
-     print *,xm_ws(i), xn_ws(i), x(i), x(ntotal_ws+i)
-  end do
+  
+  call swarm_optimize(ntotal_ws*2, opt_npop, lb, ub, opt_niter, get_lambda, &
+       x, num_procs)
+  if (my_pn == 0) then
+     print *,'best surface'
+     print *,'m, n, rmnc, zmns'
+     do i = 1,ntotal_ws
+        print *,xm_ws(i), xn_ws(i), x(i), x(ntotal_ws+i)
+     end do
+  end if
      
     
 end subroutine run_optimize

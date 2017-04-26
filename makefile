@@ -36,8 +36,8 @@ else ifeq ($(HOSTNAME),cori)
 	REGCOIL_COMMAND_TO_SUBMIT_JOB = srun -n 1 -c 32
 else ifeq ($(HOSTNAME),"abader") 
   FC = mpif90
-  EXTRA_COMPILE_FLAGS = -fopenmp -I/home/abader/netcdf/include  -I/usr/include -ffree-line-length-none
-  EXTRA_LINK_FLAGS =  -fopenmp -L/home/abader/netcdf/lib  -lnetcdff  -lnetcdf -lblas -llapack
+  EXTRA_COMPILE_FLAGS = -O2 -fopenmp -I/home/abader/netcdf/include  -I/usr/include -ffree-line-length-none
+  EXTRA_LINK_FLAGS = -O2 -fopenmp -L/home/abader/netcdf/lib  -lnetcdff  -lnetcdf -lblas -llapack
 
 else
   FC = mpif90
