@@ -51,6 +51,96 @@ subroutine run_optimize
     
 end subroutine run_optimize
 
+!A subroutine to check whether a point is inside a polygon,
+!adapted from http://www.ecse.rpi.edu/~wrf/Research/Short_Notes/pnpoly.html
+subroutine inside_polygon(xp, yp, xx, yy, poly_size, is_in) 
+
+  implicit none
+  integer :: poly_size, in_polygon
+  integer :: i,j
+  logical :: mx, my, nx, ny, is_in
+  real(dp) :: xp, yp, qq
+  real(dp), dimension(poly_size) :: xx, yy, x, y
+
+  x = xx - xp
+  y = yy - yp
+
+  in_polygon = -1
+
+  do i=1,poly_size
+     j = 1+modulo(i, poly_size)
+     mx = x(i).ge.0.0
+     nx = x(j).ge.0.0
+     my = y(i).ge.0.0
+     ny = y(j).ge.0.0
+     if(.not.((my.or.ny).and.(mx.or.nx)).or.(mx.and.nx)) then
+       cycle
+     end if
+     
+     if((my.and.ny.and.(mx.or.nx).and..not.(mx.and.nx))) then
+       in_polygon = -in_polygon
+       cycle
+     end if
+     
+     qq = (y(i)*x(j)-x(i)*y(j))/(x(j)-x(i))
+
+     if (qq.lt.0) then
+       cycle
+     else if (qq == 0) then
+        ! This condition means that it landed on the surface exactly
+        in_polygon=0
+        return
+     else
+        in_polygon=-in_polygon
+     end if
+  end do
+
+  if (in_polygon.lt.0) then
+    in_polygon = 0
+  end if
+  if (in_polygon == 0) then
+     is_in = .false.
+  else
+     is_in = .true.
+  end if
+  
+end subroutine inside_polygon
+
+subroutine get_inside_poly(is_inside)
+  use global_variables
+
+  implicit none
+  real(dp) :: x0, y0
+  real(dp), dimension(ntheta_plasma, nzeta_plasma) :: xp, yp
+  real(dp), dimension(ntheta_coil, nzeta_coil) :: xc, yc
+  integer :: i, is_inside
+  logical :: inside_section
+
+  if (nzeta_coil .ne. nzeta_plasma)  then
+     print *,'dimensions of plasma and coil zeta do not match, fix in input'
+     is_inside = 0
+     return
+  end if
+  
+  xp = sqrt(r_plasma(1,:,:)**2 + r_plasma(2,:,:)**2)
+  yp = r_plasma(3,:,:)
+  xc = sqrt(r_coil(1,:,:)**2 + r_coil(2,:,:)**2)
+  yc = r_coil(3,:,:)
+
+  is_inside = 1
+  do i = 1,nzeta_coil
+     x0 = sum(xp(:,i))/ntheta_plasma
+     y0 = sum(yp(:,i))/ntheta_plasma
+     call inside_polygon(x0, y0, xc(:,i), yc(:,i), ntheta_coil, inside_section)
+     if (.not. inside_section) then
+        is_inside = 0
+        return
+     end if
+  end do
+     
+end subroutine get_inside_poly  
+
+
 subroutine faux_distance(mindist)
   use global_variables
   
@@ -77,7 +167,7 @@ subroutine get_lambda(x, f)
   use init_surface_mod
 
   implicit none
-  integer :: i
+  integer :: i, is_inside
   real(dp) :: r0, dtheta, dzeta, f
   real(dp), dimension(ntotal_ws*2) :: x
   real(dp) :: d2rdtheta2, d2rdthetadzeta, d2rdzeta2 !dummy variables
@@ -99,6 +189,8 @@ subroutine get_lambda(x, f)
   call auto_regularization_solve()
   
   call faux_distance(mindist)
+
+  call get_inside_poly(is_inside)
   
 
   if (exit_code == 0) then 
@@ -110,7 +202,9 @@ subroutine get_lambda(x, f)
   if (mindist < 0.3) then
      f = f+50
   end if
-
+  if (is_inside == 0) then
+     f = f+200
+  end if
 
 end subroutine get_lambda
 end module optimize
