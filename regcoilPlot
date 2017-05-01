@@ -155,10 +155,10 @@ fig.patch.set_facecolor('white')
 numRows = 2
 numCols = 2
 
-Rmin = R_slice_coil.min()
-Rmax = R_slice_coil.max()
-Zmin = Z_slice_coil.min()
-Zmax = Z_slice_coil.max()
+Rmin = min(R_slice_coil.min(), R_slice_plasma.min())
+Rmax = max(R_slice_coil.max(), R_slice_plasma.max())
+Zmin = min(Z_slice_coil.min(), Z_slice_plasma.min())
+Zmax = max(Z_slice_coil.max(), Z_slice_plasma.max())
 
 for whichPlot in range(4):
     plt.subplot(numRows,numCols,whichPlot+1)
