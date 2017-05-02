@@ -30,11 +30,11 @@ subroutine run_optimize
   !make initial bounds guesses
   do i = 1,ntotal_ws*2
      if (x(i) > 0) then
-        ub(i) = x(i)*1.1
-        lb(i) = x(i)/1.1
+        ub(i) = x(i)*opt_divisor
+        lb(i) = x(i)/opt_divisor
      else
-        ub(i) = x(i)/1.1
-        lb(i) = x(i)*1.1
+        ub(i) = x(i)/opt_divisor
+        lb(i) = x(i)*opt_divisor
      end if
   end do
   
@@ -195,11 +195,13 @@ subroutine get_lambda(x, f)
 
   if (exit_code == 0) then 
      !f = -1*((volume_coil)**(1.0/3.0) + log(lambda(nlambda_autoreg)))
-     f = chi2_B(nlambda_autoreg) - (volume_coil)**(1.0/3.0)
+     f = opt_chi2b_par * chi2_B(nlambda_autoreg) - &
+         opt_vol_par * (volume_coil)**(1.0/3.0) - &
+         opt_lambda_par * log(lambda(nlambda_autoreg))
   else
      f = 100.0
   end if
-  if (mindist < 0.3) then
+  if (mindist < opt_min_dist) then
      f = f+50
   end if
   if (is_inside == 0) then

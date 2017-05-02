@@ -15,6 +15,8 @@ subroutine read_input
        separation, wout_filename, &
        save_level, nfp_imposed, symmetry_option, &
        mpol_coil, ntor_coil, opt_npop, opt_niter,&
+       opt_divisor, opt_chi2b_par, opt_lambda_par, &
+       opt_vol_par, opt_min_dist, &
        nescin_filename, efit_filename, efit_psiN, efit_num_modes, &
        mpol_transform_refinement, ntor_transform_refinement, &
        net_poloidal_current_Amperes, net_toroidal_current_Amperes, &
