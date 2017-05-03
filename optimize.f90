@@ -140,6 +140,92 @@ subroutine get_inside_poly(is_inside)
      
 end subroutine get_inside_poly  
 
+subroutine dist_squared(x1,y1,z1,x2,y2,z2,dist)
+  implicit none
+  real(dp) :: x1, y1, z1, x2, y2, z2, dist
+
+  dist = (x1-x2)**2 + (y1 - y2)**2 + (z1 - z2)**2
+end subroutine dist_squared
+
+!This calculates the minimum distance from a surface
+!The method is as follows. Start with corresponding indices for the plasma
+!and the coil. This is the initial guess as to the closest corresponding points
+!Then search the four neighboring points in theta,zeta indices. If any are
+!closer, restart the search from the closest point.
+subroutine min_surf_distance(mindist)
+  use global_variables
+
+  implicit none
+
+  integer :: i,j, is, js, iu, id, ju, jd, minind
+  real(dp), dimension(4) :: d
+  real(dp) :: mindist
+  real(dp) :: xp0, yp0, zp0, d0, dn
+
+  if ((ntheta_coil .ne. ntheta_plasma) .or. (nzeta_coil .ne. nzeta_plasma)) then
+     print *,'dimensions of plasma and coil do not match, fix in input'
+     mindist = 0.0
+     return
+  end if
+
+  !set an arbitrarily high initial distance
+  mindist = 1.0E20
+  do i = 1,ntheta_coil
+     do j = 1,nzeta_coil
+        xp0 = r_plasma(1,i,j)
+        yp0 = r_plasma(2,i,j)
+        zp0 = r_plasma(3,i,j)
+        call dist_squared(xp0, yp0, zp0, r_coil(1,i,j), r_coil(2,i,j), &
+             r_coil(3,i,j), d0)
+        dn = 0
+        is = i
+        js = j
+        do while (dn < d0)
+           !first and last poloidal indices are the same, so we skip them on
+           !wraparound
+           iu = is+1
+           if (iu > ntheta_coil) iu = 2
+           id = is-1
+           if (id < 1) id = ntheta_coil-1
+           !wrapping around toroidally is much harder, we don't bother
+           ju = js+1
+           if (ju > nzeta_coil) ju = nzeta_coil
+           jd = js-1
+           if (jd < 1) jd = 1
+           ! calculate the four distances
+           call dist_squared(xp0, yp0, zp0, &
+                r_coil(1,iu,js), r_coil(2,iu,js), r_coil(3,iu,js), d(1))
+           call dist_squared(xp0, yp0, zp0, &
+                r_coil(1,id,js), r_coil(2,id,js), r_coil(3,id,js), d(2))
+           call dist_squared(xp0, yp0, zp0, &
+                r_coil(1,is,ju), r_coil(2,is,ju), r_coil(3,is,ju), d(3))
+           call dist_squared(xp0, yp0, zp0, &
+                r_coil(1,is,jd), r_coil(2,is,jd), r_coil(3,is,jd), d(4))
+           !If the smallest distance of these four points is less than
+           !our original guess we're done, exit the loop
+           dn = minval(d)
+           if (dn > d0) exit
+           d0 = dn
+           !we found a smaller distance, recenter around this point
+           minind = minloc(d,1)
+           select case (minind)
+              case (1)
+                 is = iu
+              case (2)
+                 is = id
+              case (3)
+                 js = ju
+              case (4)
+                 js = jd
+            end select
+         end do
+         !did we find a new minimum?
+         if (d0 < mindist) mindist = d0
+      end do
+   end do
+   mindist = sqrt(mindist)
+   
+end subroutine min_surf_distance
 
 subroutine faux_distance(mindist)
   use global_variables
@@ -188,7 +274,7 @@ subroutine get_lambda(x, f)
 
   call auto_regularization_solve()
   
-  call faux_distance(mindist)
+  call min_surf_distance(mindist)
 
   call get_inside_poly(is_inside)
   
