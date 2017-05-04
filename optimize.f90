@@ -225,6 +225,7 @@ subroutine min_surf_distance(mindist)
    end do
    mindist = sqrt(mindist)
    
+   
 end subroutine min_surf_distance
 
 subroutine faux_distance(mindist)
@@ -288,7 +289,7 @@ subroutine get_lambda(x, f)
      f = 100.0
   end if
   if (mindist < opt_min_dist) then
-     f = f + mindist*opt_min_par
+     f = f + (opt_min_dist - mindist)*opt_min_par
   end if
   if (is_inside == 0) then
      f = f+200
