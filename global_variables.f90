@@ -59,7 +59,7 @@ module global_variables
   integer :: opt_npop=10, opt_niter=10
   real(dp) :: opt_divisor=1.1
   real(dp) :: opt_chi2b_par = 1.0, opt_lambda_par = 1.0, opt_vol_par = 1.0
-  real(dp) :: opt_min_dist = 0.3
+  real(dp) :: opt_min_dist = 0.3, opt_min_par = 100.0
   integer, dimension(:), allocatable :: xm_coil, xn_coil
 
   real(dp), dimension(:), allocatable :: rmns, zmnc, rmnc, zmns
