@@ -194,6 +194,7 @@ subroutine iterate(fcn)
            !write(*,*) ps_gbf, ps_gbx
         end if
      end if
+     
   end do
 
   !recover the global best
@@ -257,8 +258,12 @@ subroutine swarm_optimize(nx, pop, lb, ub, n_iter, fcn, xguess, nproc)
   implicit none
   integer :: i,k
   integer :: n, pop, n_iter, nx, nproc, ierr
+  integer, dimension(8) :: date_time
   real(dp), dimension(nx) :: lb, ub, xguess
   integer, dimension(:), allocatable :: seed
+  character(8) :: dum1
+  character(10) :: dum2
+  character(5) :: dum3
   external fcn
 
   call MPI_COMM_RANK(MPI_COMM_WORLD, procnum, ierr)
@@ -276,7 +281,10 @@ subroutine swarm_optimize(nx, pop, lb, ub, n_iter, fcn, xguess, nproc)
   !will use date and time later, for now we want reproducibility
   call random_seed(size=k)
   allocate(seed(1:k))
-  seed(:) = procnum+1
+  
+
+  call date_and_time(dum1, dum2, dum3, date_time)
+  seed(:) = (procnum+1)*date_time(8)
   call random_seed(put=seed)
   deallocate(seed)
 
