@@ -138,7 +138,7 @@ subroutine iterate(fcn)
   implicit none
   include 'mpif.h'
   external fcn
-  integer :: n,i, ierr, status, proc_with_min
+  integer :: n,i, ierr, proc_with_min, status(mpi_status_size)
   real(dp) :: rp, rg, fcnval
   real(dp) :: omega, phip, phig
   real(dp), dimension(nprocs) :: gbf_arr !best indices and best scores
