@@ -223,8 +223,7 @@ subroutine min_surf_distance(mindist)
          if (d0 < mindist) mindist = d0
       end do
    end do
-   mindist = sqrt(mindist)
-   
+   mindist = sqrt(mindist)   
    
 end subroutine min_surf_distance
 
@@ -286,7 +285,7 @@ subroutine get_lambda(x, f)
          opt_vol_par * (volume_coil)**(1.0/3.0) - &
          opt_lambda_par * log(lambda(nlambda_autoreg))
   else
-     f = 100.0
+     f = 100000.0
   end if
   if (mindist < opt_min_dist) then
      f = f + (opt_min_dist - mindist)*opt_min_par
