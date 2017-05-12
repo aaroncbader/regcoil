@@ -291,7 +291,7 @@ subroutine get_lambda(x, f)
      f = f + (opt_min_dist - mindist)*opt_min_par
   end if
   if (is_inside == 0) then
-     f = f+200
+     f = f+100000
   end if
 
 end subroutine get_lambda
